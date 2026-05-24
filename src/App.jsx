@@ -4,6 +4,7 @@ export default function CapitalCommunityBank() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
   const [message, setMessage] = useState("");
 
   const handleLogin = async () => {
@@ -25,6 +26,7 @@ export default function CapitalCommunityBank() {
       if (response.ok) {
         localStorage.setItem("bank_token", data.token);
         setMessage("Login successful");
+        setLoggedIn(true);
       } else {
         setMessage(data.message || "Login failed");
       }
@@ -34,6 +36,34 @@ export default function CapitalCommunityBank() {
       setLoading(false);
     }
   };
+  if (loggedIn) {
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        backgroundColor: "#0f172a",
+        color: "white",
+        padding: "40px",
+        fontFamily: "Arial",
+      }}
+    >
+      <h1>Capital Community Bank Dashboard</h1>
+
+      <div
+        style={{
+          marginTop: "30px",
+          background: "#1e293b",
+          padding: "20px",
+          borderRadius: "10px",
+        }}
+      >
+        <h2>Welcome Back</h2>
+        <p>Account Status: Active</p>
+        <p>Available Balance: $250,000.00</p>
+        <p>Savings Account: ****9034</p>
+      </div>
+    </div>
+  );
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
       {/* Header */}
