@@ -48,22 +48,24 @@ export default function Login() {
       style={{
         minHeight: "100vh",
         background:
-          "linear-gradient(to right, #0f172a, #1e3a8a, #0f172a)",
+          "linear-gradient(135deg, #020617, #0f172a, #1e3a8a)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        fontFamily: "Arial",
-        padding: "20px",
+        padding: "30px",
+        fontFamily: "Arial, sans-serif",
       }}
     >
       <div
         style={{
-          display: "flex",
-          width: "950px",
-          background: "#111827",
-          borderRadius: "20px",
+          width: "1100px",
+          minHeight: "650px",
+          background: "#0f172a",
+          borderRadius: "28px",
           overflow: "hidden",
-          boxShadow: "0 0 40px rgba(0,0,0,0.5)",
+          display: "flex",
+          boxShadow: "0 0 60px rgba(0,0,0,0.55)",
+          border: "1px solid rgba(255,255,255,0.08)",
         }}
       >
         {/* LEFT SIDE */}
@@ -71,52 +73,165 @@ export default function Login() {
           style={{
             flex: 1,
             background:
-              "linear-gradient(to bottom right, #2563eb, #1d4ed8)",
+              "linear-gradient(to bottom right, #2563eb, #1d4ed8, #1e40af)",
+            padding: "70px 60px",
             color: "white",
-            padding: "60px 40px",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "center",
+            justifyContent: "space-between",
+            position: "relative",
           }}
         >
-          <h1
-            style={{
-              fontSize: "42px",
-              marginBottom: "20px",
-            }}
-          >
-            Capital Community Bank
-          </h1>
+          <div>
+            {/* LOGO */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "15px",
+                marginBottom: "50px",
+              }}
+            >
+              <div
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  borderRadius: "16px",
+                  background: "rgba(255,255,255,0.15)",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  fontSize: "28px",
+                  fontWeight: "bold",
+                  backdropFilter: "blur(10px)",
+                }}
+              >
+                C
+              </div>
 
-          <p
-            style={{
-              fontSize: "18px",
-              lineHeight: "1.7",
-              opacity: 0.9,
-            }}
-          >
-            Secure digital banking with premium financial services,
-            international transfers, investment management, and
-            enterprise-grade account protection.
-          </p>
+              <div>
+                <h1
+                  style={{
+                    margin: 0,
+                    fontSize: "30px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Capital Community
+                </h1>
 
+                <p
+                  style={{
+                    marginTop: "5px",
+                    opacity: 0.85,
+                  }}
+                >
+                  Premium Digital Banking
+                </p>
+              </div>
+            </div>
+
+            <h2
+              style={{
+                fontSize: "52px",
+                lineHeight: "1.2",
+                marginBottom: "25px",
+              }}
+            >
+              Secure Banking <br />
+              Built For The Future
+            </h2>
+
+            <p
+              style={{
+                fontSize: "18px",
+                lineHeight: "1.8",
+                opacity: 0.92,
+                maxWidth: "480px",
+              }}
+            >
+              Manage transfers, monitor accounts, access secure
+              banking tools, and experience enterprise-grade
+              financial security from anywhere in the world.
+            </p>
+          </div>
+
+          {/* FEATURE CARDS */}
           <div
             style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "18px",
               marginTop: "40px",
-              padding: "20px",
-              background: "rgba(255,255,255,0.1)",
-              borderRadius: "12px",
             }}
           >
-            <h3>Trusted Online Banking</h3>
+            <div
+              style={{
+                background: "rgba(255,255,255,0.1)",
+                padding: "20px",
+                borderRadius: "18px",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <h3 style={{ marginBottom: "10px" }}>
+                🔒 Secure Access
+              </h3>
 
-            <p style={{ marginTop: "10px" }}>
-              ✔ Secure Transactions
-            </p>
+              <p style={{ opacity: 0.9 }}>
+                Protected multi-layer banking authentication.
+              </p>
+            </div>
 
-            <p>✔ 24/7 Account Access</p>
+            <div
+              style={{
+                background: "rgba(255,255,255,0.1)",
+                padding: "20px",
+                borderRadius: "18px",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <h3 style={{ marginBottom: "10px" }}>
+                🌍 Global Transfers
+              </h3>
 
-            <p>✔ Global Banking Support</p>
+              <p style={{ opacity: 0.9 }}>
+                Fast international payment processing.
+              </p>
+            </div>
+
+            <div
+              style={{
+                background: "rgba(255,255,255,0.1)",
+                padding: "20px",
+                borderRadius: "18px",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <h3 style={{ marginBottom: "10px" }}>
+                📈 Investments
+              </h3>
+
+              <p style={{ opacity: 0.9 }}>
+                Monitor portfolios and financial growth.
+              </p>
+            </div>
+
+            <div
+              style={{
+                background: "rgba(255,255,255,0.1)",
+                padding: "20px",
+                borderRadius: "18px",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <h3 style={{ marginBottom: "10px" }}>
+                ⚡ Real-Time Banking
+              </h3>
+
+              <p style={{ opacity: 0.9 }}>
+                Instant balance and account updates.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -124,91 +239,124 @@ export default function Login() {
         <div
           style={{
             flex: 1,
-            background: "#111827",
-            padding: "60px 40px",
+            background: "#020617",
+            padding: "70px 60px",
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
           }}
         >
-          <h2
+          <div
             style={{
-              color: "white",
-              fontSize: "32px",
-              marginBottom: "10px",
+              marginBottom: "40px",
             }}
           >
-            Welcome Back
-          </h2>
+            <h2
+              style={{
+                color: "white",
+                fontSize: "42px",
+                marginBottom: "10px",
+              }}
+            >
+              Welcome Back
+            </h2>
 
-          <p
-            style={{
-              color: "#9ca3af",
-              marginBottom: "35px",
-            }}
-          >
-            Sign in to access your account dashboard
-          </p>
+            <p
+              style={{
+                color: "#94a3b8",
+                fontSize: "17px",
+              }}
+            >
+              Sign in securely to your banking account
+            </p>
+          </div>
 
           <form onSubmit={handleLogin}>
-            <input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "15px",
-                marginBottom: "20px",
-                borderRadius: "10px",
-                border: "1px solid #374151",
-                background: "#1f2937",
-                color: "white",
-                fontSize: "16px",
-              }}
-            />
+            <div style={{ marginBottom: "22px" }}>
+              <label
+                style={{
+                  color: "#cbd5e1",
+                  display: "block",
+                  marginBottom: "10px",
+                  fontSize: "15px",
+                }}
+              >
+                Username
+              </label>
 
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "15px",
-                marginBottom: "20px",
-                borderRadius: "10px",
-                border: "1px solid #374151",
-                background: "#1f2937",
-                color: "white",
-                fontSize: "16px",
-              }}
-            />
+              <input
+                type="text"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "16px",
+                  borderRadius: "14px",
+                  border: "1px solid #1e293b",
+                  background: "#0f172a",
+                  color: "white",
+                  fontSize: "16px",
+                  outline: "none",
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: "28px" }}>
+              <label
+                style={{
+                  color: "#cbd5e1",
+                  display: "block",
+                  marginBottom: "10px",
+                  fontSize: "15px",
+                }}
+              >
+                Password
+              </label>
+
+              <input
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "16px",
+                  borderRadius: "14px",
+                  border: "1px solid #1e293b",
+                  background: "#0f172a",
+                  color: "white",
+                  fontSize: "16px",
+                  outline: "none",
+                }}
+              />
+            </div>
 
             <button
               type="submit"
               disabled={loading}
               style={{
                 width: "100%",
-                padding: "15px",
-                background:
-                  "linear-gradient(to right, #2563eb, #1d4ed8)",
-                color: "white",
+                padding: "17px",
+                borderRadius: "14px",
                 border: "none",
-                borderRadius: "10px",
-                fontSize: "16px",
+                background:
+                  "linear-gradient(to right, #2563eb, #3b82f6)",
+                color: "white",
+                fontSize: "17px",
                 fontWeight: "bold",
                 cursor: "pointer",
+                boxShadow: "0 10px 25px rgba(37,99,235,0.4)",
               }}
             >
-              {loading ? "Signing In..." : "Secure Login"}
+              {loading ? "Signing In..." : "Access Secure Banking"}
             </button>
 
             {message && (
               <p
                 style={{
-                  color: "#f87171",
                   marginTop: "20px",
+                  color: "#f87171",
                   textAlign: "center",
                 }}
               >
@@ -216,6 +364,17 @@ export default function Login() {
               </p>
             )}
           </form>
+
+          <div
+            style={{
+              marginTop: "35px",
+              textAlign: "center",
+              color: "#64748b",
+              fontSize: "14px",
+            }}
+          >
+            Protected by enterprise-grade banking encryption
+          </div>
         </div>
       </div>
     </div>
