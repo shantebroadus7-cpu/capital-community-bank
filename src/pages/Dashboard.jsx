@@ -337,37 +337,95 @@ export default function Dashboard() {
               gap: "20px",
             }}
           >
-            {[
-              "Transfer Funds",
-              "Pay Bills",
-              "Deposit Check",
-              "View Cards",
-            ].map((action) => (
-              <div
-                key={action}
-                style={{
-                  background: "#0f172a",
-                  border: "1px solid #1e293b",
-                  borderRadius: "18px",
-                  padding: "25px",
-                  color: "white",
-                  cursor: "pointer",
-                  transition: "0.3s",
-                }}
-              >
-                <h3>{action}</h3>
+            <div
+  onClick={() => navigate("/transfer")}
+  style={{
+    background: "#0f172a",
+    border: "1px solid #1e293b",
+    borderRadius: "18px",
+    padding: "25px",
+    color: "white",
+    cursor: "pointer",
+  }}
+>
+  <h3>Transfer Funds</h3>
 
-                <p
-                  style={{
-                    marginTop: "10px",
-                    color: "#94a3b8",
-                    fontSize: "14px",
-                  }}
-                >
-                  Access banking service
-                </p>
-              </div>
-            ))}
+  <p
+    style={{
+      marginTop: "10px",
+      color: "#94a3b8",
+      fontSize: "14px",
+    }}
+  >
+    Send money securely
+  </p>
+</div>
+
+<div
+  style={{
+    background: "#0f172a",
+    border: "1px solid #1e293b",
+    borderRadius: "18px",
+    padding: "25px",
+    color: "white",
+  }}
+>
+  <h3>Pay Bills</h3>
+
+  <p
+    style={{
+      marginTop: "10px",
+      color: "#94a3b8",
+      fontSize: "14px",
+    }}
+  >
+    Manage utility payments
+  </p>
+</div>
+
+<div
+  style={{
+    background: "#0f172a",
+    border: "1px solid #1e293b",
+    borderRadius: "18px",
+    padding: "25px",
+    color: "white",
+  }}
+>
+  <h3>Deposit Check</h3>
+
+  <p
+    style={{
+      marginTop: "10px",
+      color: "#94a3b8",
+      fontSize: "14px",
+    }}
+  >
+    Deposit checks digitally
+  </p>
+</div>
+
+<div
+  style={{
+    background: "#0f172a",
+    border: "1px solid #1e293b",
+    borderRadius: "18px",
+    padding: "25px",
+    color: "white",
+  }}
+>
+  <h3>View Cards</h3>
+
+  <p
+    style={{
+      marginTop: "10px",
+      color: "#94a3b8",
+      fontSize: "14px",
+    }}
+  >
+    Manage debit and credit cards
+  </p>
+</div>
           </div>
         </div>
 
