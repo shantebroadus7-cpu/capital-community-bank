@@ -12,54 +12,68 @@ export default function Transfer() {
     routingNumber: "",
     amount: "",
     description: "",
+    type: "Domestic Wire",
   });
 
   const [message, setMessage] = useState("");
+
   const [beneficiaries, setBeneficiaries] = useState(
-  JSON.parse(localStorage.getItem("beneficiaries")) || []
-);
+    JSON.parse(localStorage.getItem("beneficiaries")) || []
+  );
+
   const [receipt, setReceipt] = useState(null);
 
   const handleChange = (e) => {
+
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
-  };
-const saveBeneficiary = () => {
 
-  const beneficiaryData = {
-    recipient: formData.recipient,
-    bank: formData.bank,
-    accountNumber: formData.accountNumber,
-    routingNumber: formData.routingNumber,
   };
 
-  const updatedBeneficiaries = [
-    beneficiaryData,
-    ...beneficiaries,
-  ];
+  // SAVE BENEFICIARY
+  const saveBeneficiary = () => {
 
-  setBeneficiaries(updatedBeneficiaries);
+    const beneficiaryData = {
+      recipient: formData.recipient,
+      bank: formData.bank,
+      accountNumber: formData.accountNumber,
+      routingNumber: formData.routingNumber,
+    };
 
-  localStorage.setItem(
-    "beneficiaries",
-    JSON.stringify(updatedBeneficiaries)
-  );
+    const updatedBeneficiaries = [
+      beneficiaryData,
+      ...beneficiaries,
+    ];
 
-  setMessage("Beneficiary saved successfully");
-};const loadBeneficiary = (beneficiary) => {
+    setBeneficiaries(updatedBeneficiaries);
 
-  setFormData({
-    ...formData,
-    recipient: beneficiary.recipient,
-    bank: beneficiary.bank,
-    accountNumber: beneficiary.accountNumber,
-    routingNumber: beneficiary.routingNumber,
-  });
+    localStorage.setItem(
+      "beneficiaries",
+      JSON.stringify(updatedBeneficiaries)
+    );
 
-};
-  const handleTransfer = (e) => {
+    setMessage("Beneficiary saved successfully");
+
+  };
+
+  // LOAD BENEFICIARY
+  const loadBeneficiary = (beneficiary) => {
+
+    setFormData({
+      ...formData,
+      recipient: beneficiary.recipient,
+      bank: beneficiary.bank,
+      accountNumber: beneficiary.accountNumber,
+      routingNumber: beneficiary.routingNumber,
+    });
+
+  };
+
+  // TRANSFER
+  const handleTransfer = async (e) => {
+
     e.preventDefault();
 
     const {
@@ -77,82 +91,121 @@ const saveBeneficiary = () => {
       !routingNumber ||
       !amount
     ) {
-      setMessage("Please complete all required fields.");
+
+      setMessage(
+        "Please complete all required fields."
+      );
+
       return;
+
     }
-const currentBalance =
-  Number(localStorage.getItem("bank_balance")) || 250000;
 
-const transferAmount =
-  Number(formData.amount);
+    // BALANCE CHECK
+    const currentBalance =
+      Number(localStorage.getItem("bank_balance")) ||
+      250000;
 
-if (transferAmount > currentBalance) {
+    const transferAmount = Number(amount);
 
-  setMessage("Insufficient funds");
+    if (transferAmount > currentBalance) {
 
-  return;
-}
+      setMessage("Insufficient funds");
 
-const updatedBalance =
-  currentBalance - transferAmount;
+      return;
 
-localStorage.setItem(
-  "bank_balance",
-  updatedBalance
-);
-    const existingTransactions =
-      JSON.parse(localStorage.getItem("transactions")) || [];
+    }
 
-    const newTransaction = {
-  name: recipient,
-  bank,
-  accountNumber,
-  routingNumber,
-  amount: `-$${Number(amount).toLocaleString()}`,
-  status: "Completed",
-  date: new Date().toLocaleString(),
-};
-
-    existingTransactions.unshift(newTransaction);
+    // UPDATE BALANCE
+    const updatedBalance =
+      currentBalance - transferAmount;
 
     localStorage.setItem(
-      "transactions",
-      JSON.stringify(existingTransactions)
+      "bank_balance",
+      updatedBalance
     );
 
-    const receiptData = {
-      id:
-        "TRX-" +
-        Math.floor(Math.random() * 100000000),
+    try {
 
-      recipient: formData.recipient,
+      // SAVE TO MONGODB
+      await fetch(
+        "https://capital-bank-api.onrender.com/api/transfer",
+        {
+          method: "POST",
 
-      bank: formData.bank,
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-      amount: formData.amount,
+          body: JSON.stringify({
 
-      date: new Date().toLocaleString(),
+            sender:
+              localStorage.getItem(
+                "bank_username"
+              ),
 
-      status: "Completed",
-    };
+            recipient: formData.recipient,
 
-    setReceipt(receiptData);
+            bank: formData.bank,
 
-    setMessage("Transfer request submitted successfully.");
+            accountNumber:
+              formData.accountNumber,
 
-    setTimeout(() => {
+            amount: formData.amount,
 
-  navigate("/receipt", {
-    state: {
-      recipient: formData.recipient,
-      bank: formData.bank,
-      accountNumber: formData.accountNumber,
-      routingNumber: formData.routingNumber,
-      amount: formData.amount,
-    },
-  });
+          }),
+        }
+      );
 
-}, 2500);
+      // RECEIPT
+      const receiptData = {
+
+        id:
+          "TRX-" +
+          Math.floor(
+            Math.random() * 100000000
+          ),
+
+        recipient: formData.recipient,
+
+        bank: formData.bank,
+
+        amount: formData.amount,
+
+        date: new Date().toLocaleString(),
+
+        status: "Completed",
+
+      };
+
+      setReceipt(receiptData);
+
+      setMessage(
+        "Transfer request submitted successfully."
+      );
+
+      // REDIRECT
+      setTimeout(() => {
+
+        navigate("/receipt", {
+          state: {
+            recipient: formData.recipient,
+            bank: formData.bank,
+            accountNumber:
+              formData.accountNumber,
+            routingNumber:
+              formData.routingNumber,
+            amount: formData.amount,
+          },
+        });
+
+      }, 2500);
+
+    } catch (error) {
+
+      setMessage("Transfer failed");
+
+    }
+
   };
 
   return (
@@ -165,6 +218,7 @@ localStorage.setItem(
         fontFamily: "Arial, sans-serif",
       }}
     >
+
       {/* TOP BAR */}
       <div
         style={{
@@ -174,7 +228,9 @@ localStorage.setItem(
           marginBottom: "35px",
         }}
       >
+
         <div>
+
           <h1
             style={{
               color: "white",
@@ -191,6 +247,7 @@ localStorage.setItem(
           >
             Secure domestic and international transfers
           </p>
+
         </div>
 
         <button
@@ -206,6 +263,7 @@ localStorage.setItem(
         >
           Back To Dashboard
         </button>
+
       </div>
 
       {/* MAIN CARD */}
@@ -217,14 +275,18 @@ localStorage.setItem(
           borderRadius: "28px",
           padding: "40px",
           border: "1px solid #1e293b",
-          boxShadow: "0 0 40px rgba(0,0,0,0.4)",
+          boxShadow:
+            "0 0 40px rgba(0,0,0,0.4)",
         }}
       >
+
+        {/* HEADER */}
         <div
           style={{
             marginBottom: "35px",
           }}
         >
+
           <h2
             style={{
               color: "white",
@@ -241,90 +303,106 @@ localStorage.setItem(
           >
             Enter beneficiary banking information securely.
           </p>
+
         </div>
-{/* BENEFICIARIES */}
 
-<div
-  style={{
-    marginBottom: "35px",
-  }}
->
-  <h3
-    style={{
-      color: "white",
-      marginBottom: "18px",
-    }}
-  >
-    Saved Beneficiaries
-  </h3>
-
-  {beneficiaries.length === 0 ? (
-
-    <p
-      style={{
-        color: "#94a3b8",
-      }}
-    >
-      No saved beneficiaries
-    </p>
-
-  ) : (
-
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns:
-          "repeat(auto-fit, minmax(240px, 1fr))",
-        gap: "15px",
-      }}
-    >
-      {beneficiaries.map((beneficiary, index) => (
-
+        {/* BENEFICIARIES */}
         <div
-          key={index}
-          onClick={() => loadBeneficiary(beneficiary)}
           style={{
-            background: "#020617",
-            border: "1px solid #1e293b",
-            borderRadius: "18px",
-            padding: "18px",
-            cursor: "pointer",
+            marginBottom: "35px",
           }}
         >
-          <h4
+
+          <h3
             style={{
               color: "white",
-              marginBottom: "8px",
+              marginBottom: "18px",
             }}
           >
-            {beneficiary.recipient}
-          </h4>
+            Saved Beneficiaries
+          </h3>
 
-          <p
-            style={{
-              color: "#94a3b8",
-              fontSize: "14px",
-            }}
-          >
-            {beneficiary.bank}
-          </p>
+          {beneficiaries.length === 0 ? (
 
-          <p
-            style={{
-              color: "#64748b",
-              fontSize: "13px",
-              marginTop: "6px",
-            }}
-          >
-            {beneficiary.accountNumber}
-          </p>
+            <p
+              style={{
+                color: "#94a3b8",
+              }}
+            >
+              No saved beneficiaries
+            </p>
+
+          ) : (
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(240px, 1fr))",
+                gap: "15px",
+              }}
+            >
+
+              {beneficiaries.map(
+                (beneficiary, index) => (
+
+                  <div
+                    key={index}
+                    onClick={() =>
+                      loadBeneficiary(
+                        beneficiary
+                      )
+                    }
+                    style={{
+                      background: "#020617",
+                      border:
+                        "1px solid #1e293b",
+                      borderRadius: "18px",
+                      padding: "18px",
+                      cursor: "pointer",
+                    }}
+                  >
+
+                    <h4
+                      style={{
+                        color: "white",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      {beneficiary.recipient}
+                    </h4>
+
+                    <p
+                      style={{
+                        color: "#94a3b8",
+                        fontSize: "14px",
+                      }}
+                    >
+                      {beneficiary.bank}
+                    </p>
+
+                    <p
+                      style={{
+                        color: "#64748b",
+                        fontSize: "13px",
+                        marginTop: "6px",
+                      }}
+                    >
+                      {beneficiary.accountNumber}
+                    </p>
+
+                  </div>
+
+                )
+              )}
+
+            </div>
+
+          )}
+
         </div>
 
-      ))}
-    </div>
-
-  )}
-</div>
+        {/* FORM */}
         <form onSubmit={handleTransfer}>
 
           <div
@@ -335,15 +413,11 @@ localStorage.setItem(
               gap: "22px",
             }}
           >
-            {/* Recipient */}
+
+            {/* RECIPIENT */}
             <div>
-              <label
-                style={{
-                  color: "#cbd5e1",
-                  display: "block",
-                  marginBottom: "10px",
-                }}
-              >
+
+              <label style={labelInputStyle}>
                 Recipient Name
               </label>
 
@@ -355,17 +429,13 @@ localStorage.setItem(
                 onChange={handleChange}
                 style={inputStyle}
               />
+
             </div>
 
-            {/* Bank */}
+            {/* BANK */}
             <div>
-              <label
-                style={{
-                  color: "#cbd5e1",
-                  display: "block",
-                  marginBottom: "10px",
-                }}
-              >
+
+              <label style={labelInputStyle}>
                 Bank Name
               </label>
 
@@ -377,17 +447,13 @@ localStorage.setItem(
                 onChange={handleChange}
                 style={inputStyle}
               />
+
             </div>
 
-            {/* Account Number */}
+            {/* ACCOUNT NUMBER */}
             <div>
-              <label
-                style={{
-                  color: "#cbd5e1",
-                  display: "block",
-                  marginBottom: "10px",
-                }}
-              >
+
+              <label style={labelInputStyle}>
                 Account Number
               </label>
 
@@ -399,17 +465,13 @@ localStorage.setItem(
                 onChange={handleChange}
                 style={inputStyle}
               />
+
             </div>
 
-            {/* Routing Number */}
+            {/* ROUTING */}
             <div>
-              <label
-                style={{
-                  color: "#cbd5e1",
-                  display: "block",
-                  marginBottom: "10px",
-                }}
-              >
+
+              <label style={labelInputStyle}>
                 Routing Number
               </label>
 
@@ -421,17 +483,13 @@ localStorage.setItem(
                 onChange={handleChange}
                 style={inputStyle}
               />
+
             </div>
 
-            {/* Amount */}
+            {/* AMOUNT */}
             <div>
-              <label
-                style={{
-                  color: "#cbd5e1",
-                  display: "block",
-                  marginBottom: "10px",
-                }}
-              >
+
+              <label style={labelInputStyle}>
                 Transfer Amount
               </label>
 
@@ -443,22 +501,19 @@ localStorage.setItem(
                 onChange={handleChange}
                 style={inputStyle}
               />
+
             </div>
 
-            {/* Transfer Type */}
+            {/* TYPE */}
             <div>
-              <label
-                style={{
-                  color: "#cbd5e1",
-                  display: "block",
-                  marginBottom: "10px",
-                }}
-              >
+
+              <label style={labelInputStyle}>
                 Transfer Type
               </label>
 
               <select
                 name="type"
+                value={formData.type}
                 onChange={handleChange}
                 style={inputStyle}
               >
@@ -466,18 +521,15 @@ localStorage.setItem(
                 <option>International Wire</option>
                 <option>ACH Transfer</option>
               </select>
+
             </div>
+
           </div>
 
           {/* DESCRIPTION */}
           <div style={{ marginTop: "25px" }}>
-            <label
-              style={{
-                color: "#cbd5e1",
-                display: "block",
-                marginBottom: "10px",
-              }}
-            >
+
+            <label style={labelInputStyle}>
               Transfer Description
             </label>
 
@@ -492,9 +544,10 @@ localStorage.setItem(
                 resize: "none",
               }}
             />
+
           </div>
 
-          {/* SECURITY BOX */}
+          {/* SECURITY */}
           <div
             style={{
               marginTop: "30px",
@@ -504,6 +557,7 @@ localStorage.setItem(
               borderRadius: "18px",
             }}
           >
+
             <h3
               style={{
                 color: "white",
@@ -519,18 +573,37 @@ localStorage.setItem(
                 lineHeight: "1.7",
               }}
             >
-              All transfer requests are protected with encrypted
-              banking security protocols and monitored for fraud
-              prevention.
+              All transfer requests are protected with encrypted banking security protocols and monitored for fraud prevention.
             </p>
+
           </div>
 
-          {/* BUTTON */}
+          {/* SAVE BENEFICIARY */}
+          <button
+            type="button"
+            onClick={saveBeneficiary}
+            style={{
+              width: "100%",
+              marginTop: "25px",
+              padding: "16px",
+              border: "1px solid #2563eb",
+              borderRadius: "16px",
+              background: "transparent",
+              color: "#3b82f6",
+              fontWeight: "bold",
+              fontSize: "16px",
+              cursor: "pointer",
+            }}
+          >
+            Save Beneficiary
+          </button>
+
+          {/* SUBMIT */}
           <button
             type="submit"
             style={{
               width: "100%",
-              marginTop: "30px",
+              marginTop: "20px",
               padding: "18px",
               border: "none",
               borderRadius: "16px",
@@ -540,30 +613,16 @@ localStorage.setItem(
               fontWeight: "bold",
               fontSize: "17px",
               cursor: "pointer",
-              boxShadow: "0 15px 30px rgba(37,99,235,0.3)",
+              boxShadow:
+                "0 15px 30px rgba(37,99,235,0.3)",
             }}
-          ><button
-  type="button"
-  onClick={saveBeneficiary}
-  style={{
-    width: "100%",
-    marginTop: "25px",
-    padding: "16px",
-    border: "1px solid #2563eb",
-    borderRadius: "16px",
-    background: "transparent",
-    color: "#3b82f6",
-    fontWeight: "bold",
-    fontSize: "16px",
-    cursor: "pointer",
-  }}
->
-  Save Beneficiary
-</button>
+          >
             Submit Transfer Request
           </button>
 
+          {/* MESSAGE */}
           {message && (
+
             <p
               style={{
                 marginTop: "20px",
@@ -574,9 +633,10 @@ localStorage.setItem(
             >
               {message}
             </p>
+
           )}
 
-          {/* RECEIPT UI */}
+          {/* RECEIPT */}
           {receipt && (
 
             <div
@@ -588,6 +648,7 @@ localStorage.setItem(
                 padding: "30px",
               }}
             >
+
               <h2
                 style={{
                   color: "white",
@@ -607,40 +668,63 @@ localStorage.setItem(
               >
 
                 <div>
-                  <p style={labelStyle}>Receipt Number</p>
-                  <h3 style={valueStyle}>{receipt.id}</h3>
+                  <p style={labelStyle}>
+                    Receipt Number
+                  </p>
+
+                  <h3 style={valueStyle}>
+                    {receipt.id}
+                  </h3>
                 </div>
 
                 <div>
-                  <p style={labelStyle}>Recipient</p>
+                  <p style={labelStyle}>
+                    Recipient
+                  </p>
+
                   <h3 style={valueStyle}>
                     {receipt.recipient}
                   </h3>
                 </div>
 
                 <div>
-                  <p style={labelStyle}>Bank</p>
+                  <p style={labelStyle}>
+                    Bank
+                  </p>
+
                   <h3 style={valueStyle}>
                     {receipt.bank}
                   </h3>
                 </div>
 
                 <div>
-                  <p style={labelStyle}>Amount</p>
+                  <p style={labelStyle}>
+                    Amount
+                  </p>
+
                   <h3 style={valueStyle}>
-                    ${Number(receipt.amount).toLocaleString()}
+                    $
+                    {Number(
+                      receipt.amount
+                    ).toLocaleString()}
                   </h3>
                 </div>
 
                 <div>
-                  <p style={labelStyle}>Date</p>
+                  <p style={labelStyle}>
+                    Date
+                  </p>
+
                   <h3 style={valueStyle}>
                     {receipt.date}
                   </h3>
                 </div>
 
                 <div>
-                  <p style={labelStyle}>Status</p>
+                  <p style={labelStyle}>
+                    Status
+                  </p>
+
                   <h3
                     style={{
                       color: "#22c55e",
@@ -651,15 +735,24 @@ localStorage.setItem(
                 </div>
 
               </div>
+
             </div>
 
           )}
 
         </form>
+
       </div>
+
     </div>
   );
 }
+
+const labelInputStyle = {
+  color: "#cbd5e1",
+  display: "block",
+  marginBottom: "10px",
+};
 
 const labelStyle = {
   color: "#94a3b8",

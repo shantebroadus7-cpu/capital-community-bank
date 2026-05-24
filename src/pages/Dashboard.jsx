@@ -1,32 +1,64 @@
 import { useNavigate } from "react-router-dom";
-import { generateStatement } from "../utils/generateStatement";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
+
   const navigate = useNavigate();
-  const username = localStorage.getItem("bank_username");
-  const balance = localStorage.getItem("bank_balance");
-  useEffect(() => {
-  const token = localStorage.getItem("bank_token");
 
-  if (!token) {
-    navigate("/");
-  }
-}, []);
-  useEffect(() => {
-  const token = localStorage.getItem("bank_token");
+  const [transactions, setTransactions] =
+    useState([]);
 
-  if (!token) {
-    navigate("/");
-  }
-}, []);
+  const username =
+    localStorage.getItem("bank_username");
+
+  const balance =
+    Number(
+      localStorage.getItem("bank_balance")
+    ) || 250000;
+
+  useEffect(() => {
+
+    const token =
+      localStorage.getItem("bank_token");
+
+    if (!token) {
+      navigate("/");
+    }
+
+    fetchTransactions();
+
+  }, []);
+
+  const fetchTransactions = async () => {
+
+    try {
+
+      const response = await fetch(
+        "https://capital-bank-api.onrender.com/api/transactions"
+      );
+
+      const data = await response.json();
+
+      setTransactions(data);
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+
+  };
 
   const logout = () => {
+
     localStorage.removeItem("bank_token");
+
     navigate("/");
+
   };
 
   return (
+
     <div
       style={{
         minHeight: "100vh",
@@ -35,7 +67,9 @@ export default function Dashboard() {
         fontFamily: "Arial, sans-serif",
       }}
     >
+
       {/* SIDEBAR */}
+
       <div
         style={{
           width: "260px",
@@ -47,8 +81,11 @@ export default function Dashboard() {
           justifyContent: "space-between",
         }}
       >
+
         <div>
+
           {/* LOGO */}
+
           <div
             style={{
               display: "flex",
@@ -57,6 +94,7 @@ export default function Dashboard() {
               marginBottom: "50px",
             }}
           >
+
             <div
               style={{
                 width: "50px",
@@ -76,6 +114,7 @@ export default function Dashboard() {
             </div>
 
             <div>
+
               <h2
                 style={{
                   color: "white",
@@ -95,10 +134,13 @@ export default function Dashboard() {
               >
                 Digital Banking
               </p>
+
             </div>
+
           </div>
 
           {/* MENU */}
+
           <div
             style={{
               display: "flex",
@@ -106,6 +148,7 @@ export default function Dashboard() {
               gap: "12px",
             }}
           >
+
             {[
               "Dashboard",
               "Accounts",
@@ -115,6 +158,7 @@ export default function Dashboard() {
               "Investments",
               "Support",
             ].map((item) => (
+
               <div
                 key={item}
                 style={{
@@ -131,11 +175,15 @@ export default function Dashboard() {
               >
                 {item}
               </div>
+
             ))}
+
           </div>
+
         </div>
 
         {/* LOGOUT */}
+
         <button
           onClick={logout}
           style={{
@@ -150,9 +198,11 @@ export default function Dashboard() {
         >
           Logout
         </button>
+
       </div>
 
       {/* MAIN CONTENT */}
+
       <div
         style={{
           flex: 1,
@@ -160,7 +210,9 @@ export default function Dashboard() {
           overflowY: "auto",
         }}
       >
-        {/* TOP BAR */}
+
+        {/* HEADER */}
+
         <div
           style={{
             display: "flex",
@@ -169,7 +221,9 @@ export default function Dashboard() {
             marginBottom: "35px",
           }}
         >
+
           <div>
+
             <h1
               style={{
                 color: "white",
@@ -186,6 +240,7 @@ export default function Dashboard() {
             >
               Manage your finances securely
             </p>
+
           </div>
 
           <div
@@ -199,249 +254,124 @@ export default function Dashboard() {
           >
             Premium Account
           </div>
+
         </div>
 
-        {/* BALANCE CARDS */}
+        {/* BALANCE */}
+
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-            gap: "22px",
+            background:
+              "linear-gradient(to right, #2563eb, #1d4ed8)",
+            padding: "35px",
+            borderRadius: "24px",
+            color: "white",
             marginBottom: "35px",
           }}
         >
-          {/* MAIN BALANCE */}
-          <div
+
+          <p
             style={{
-              background:
-                "linear-gradient(to right, #2563eb, #1d4ed8)",
-              padding: "30px",
-              borderRadius: "22px",
-              color: "white",
-              boxShadow: "0 20px 40px rgba(37,99,235,0.25)",
+              opacity: 0.9,
+              marginBottom: "15px",
             }}
           >
-            <p
-              style={{
-                opacity: 0.9,
-                marginBottom: "15px",
-              }}
-            >
-              Total Balance
-            </p>
+            Available Balance
+          </p>
 
-            <h2
-  style={{
-    fontSize: "38px",
-    marginBottom: "25px",
-  }}
->
-  $
-  {Number(
-    localStorage.getItem("bank_balance") || 250000
-  ).toLocaleString()}
-</h2>
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                opacity: 0.9,
-              }}
-            >
-              <span>**** 9034</span>
-
-              <span>VISA</span>
-            </div>
-          </div>
-
-          {/* SAVINGS */}
-          <div
-            style={{
-              background: "#0f172a",
-              padding: "30px",
-              borderRadius: "22px",
-              border: "1px solid #1e293b",
-              color: "white",
-            }}
-          >
-            <p
-              style={{
-                color: "#94a3b8",
-                marginBottom: "12px",
-              }}
-            >
-              Savings Account
-            </p>
-
-            <h2>$80,500.00</h2>
-
-            <p
-              style={{
-                marginTop: "20px",
-                color: "#22c55e",
-              }}
-            >
-              +4.5% this month
-            </p>
-          </div>
-
-          {/* INVESTMENTS */}
-          <div
-            style={{
-              background: "#0f172a",
-              padding: "30px",
-              borderRadius: "22px",
-              border: "1px solid #1e293b",
-              color: "white",
-            }}
-          >
-            <p
-              style={{
-                color: "#94a3b8",
-                marginBottom: "12px",
-              }}
-            >
-              Investments
-            </p>
-
-            <h2>$120,300.00</h2>
-
-            <p
-              style={{
-                marginTop: "20px",
-                color: "#3b82f6",
-              }}
-            >
-              Portfolio Growth Active
-            </p>
-          </div>
-        </div>
-
-        {/* QUICK ACTIONS */}
-        <div
-          style={{
-            marginBottom: "35px",
-          }}
-        >
           <h2
             style={{
-              color: "white",
+              fontSize: "42px",
               marginBottom: "20px",
             }}
           >
-            Quick Actions
+            ${balance.toLocaleString()}
           </h2>
 
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit, minmax(180px, 1fr))",
-              gap: "20px",
+              display: "flex",
+              justifyContent: "space-between",
             }}
           >
-            <div
-  onClick={() => navigate("/transfer")}
-  style={{
-    background: "#0f172a",
-    border: "1px solid #1e293b",
-    borderRadius: "18px",
-    padding: "25px",
-    color: "white",
-    cursor: "pointer",
-  }}
->
-  <h3>Transfer Funds</h3>
+            <span>**** 9034</span>
 
-  <p
-    style={{
-      marginTop: "10px",
-      color: "#94a3b8",
-      fontSize: "14px",
-    }}
-  >
-    Send money securely
-  </p>
-</div>
-
-<div
-  style={{
-    background: "#0f172a",
-    border: "1px solid #1e293b",
-    borderRadius: "18px",
-    padding: "25px",
-    color: "white",
-  }}
->
-  <h3>Pay Bills</h3>
-
-  <p
-    style={{
-      marginTop: "10px",
-      color: "#94a3b8",
-      fontSize: "14px",
-    }}
-  >
-    Manage utility payments
-  </p>
-</div>
-
-<div
-  style={{
-    background: "#0f172a",
-    border: "1px solid #1e293b",
-    borderRadius: "18px",
-    padding: "25px",
-    color: "white",
-  }}
->
-  <h3>Deposit Check</h3>
-
-  <p
-    style={{
-      marginTop: "10px",
-      color: "#94a3b8",
-      fontSize: "14px",
-    }}
-  >
-    Deposit checks digitally
-  </p>
-</div>
-
-<div
-  style={{
-    background: "#0f172a",
-    border: "1px solid #1e293b",
-    borderRadius: "18px",
-    padding: "25px",
-    color: "white",
-  }}
->
-  <h3>View Cards</h3>
-
-  <p
-    style={{
-      marginTop: "10px",
-      color: "#94a3b8",
-      fontSize: "14px",
-    }}
-  >
-    Manage debit and credit cards
-  </p>
-</div>
+            <span>VISA SIGNATURE</span>
           </div>
+
+        </div>
+
+        {/* ACTIONS */}
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(auto-fit, minmax(220px, 1fr))",
+            gap: "20px",
+            marginBottom: "35px",
+          }}
+        >
+
+          <div
+            onClick={() => navigate("/transfer")}
+            style={{
+              background: "#0f172a",
+              border: "1px solid #1e293b",
+              borderRadius: "20px",
+              padding: "25px",
+              color: "white",
+              cursor: "pointer",
+            }}
+          >
+            <h3>Transfer Funds</h3>
+
+            <p
+              style={{
+                marginTop: "10px",
+                color: "#94a3b8",
+              }}
+            >
+              Send money securely
+            </p>
+
+          </div>
+
+          <div
+            style={{
+              background: "#0f172a",
+              border: "1px solid #1e293b",
+              borderRadius: "20px",
+              padding: "25px",
+              color: "white",
+            }}
+          >
+            <h3>Manage Cards</h3>
+
+            <p
+              style={{
+                marginTop: "10px",
+                color: "#94a3b8",
+              }}
+            >
+              Freeze and monitor cards
+            </p>
+
+          </div>
+
         </div>
 
         {/* TRANSACTIONS */}
+
         <div
           style={{
             background: "#0f172a",
-            borderRadius: "22px",
+            borderRadius: "24px",
             padding: "30px",
             border: "1px solid #1e293b",
           }}
         >
+
           <div
             style={{
               display: "flex",
@@ -449,99 +379,108 @@ export default function Dashboard() {
               marginBottom: "25px",
             }}
           >
-            <h2 style={{ color: "white" }}>
+
+            <h2
+              style={{
+                color: "white",
+              }}
+            >
               Recent Transactions
             </h2>
 
-            <p style={{ color: "#3b82f6", cursor: "pointer" }}>
+            <p
+              style={{
+                color: "#3b82f6",
+              }}
+            >
               View All
             </p>
+
           </div>
 
-          {(JSON.parse(localStorage.getItem("transactions")) || []).map(
-  (tx, index) => (
+          {transactions.length === 0 ? (
 
-    <div
-      key={index}
+            <p
+              style={{
+                color: "#94a3b8",
+              }}
+            >
+              No transactions yet
+            </p>
 
-      onClick={() =>
-        navigate("/receipt", {
-          state: {
-            recipient: tx.name,
-            bank:
-              tx.bank || "Capital Community Bank",
-            accountNumber:
-              tx.accountNumber || "************",
-            routingNumber:
-              tx.routingNumber || "021000021",
-            amount:
-              tx.amount
-                .replace("-", "")
-                .replace("$", ""),
-          },
-        })
-      }
+          ) : (
 
-      style={{
-        background: "#020617",
-        border: "1px solid #1e293b",
-        borderRadius: "18px",
-        padding: "20px",
-        marginBottom: "16px",
-        cursor: "pointer",
-        transition: "0.3s",
-      }}
-    >
+            transactions.map((tx, index) => (
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
+              <div
+                key={index}
+                onClick={() =>
+                  navigate("/receipt", {
+                    state: tx,
+                  })
+                }
+                style={{
+                  background: "#020617",
+                  border: "1px solid #1e293b",
+                  borderRadius: "18px",
+                  padding: "20px",
+                  marginBottom: "15px",
+                  cursor: "pointer",
+                }}
+              >
 
-        <div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
 
-          <h4
-            style={{
-              color: "white",
-              marginBottom: "8px",
-            }}
-          >
-            {tx.name}
-          </h4>
+                  <div>
 
-          <p
-            style={{
-              color: "#94a3b8",
-              fontSize: "14px",
-            }}
-          >
-            {tx.status}
-          </p>
+                    <h4
+                      style={{
+                        color: "white",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      {tx.recipient}
+                    </h4>
+
+                    <p
+                      style={{
+                        color: "#94a3b8",
+                        fontSize: "14px",
+                      }}
+                    >
+                      {tx.status}
+                    </p>
+
+                  </div>
+
+                  <h3
+                    style={{
+                      color: "#ef4444",
+                    }}
+                  >
+                    -${Number(tx.amount).toLocaleString()}
+                  </h3>
+
+                </div>
+
+              </div>
+
+            ))
+
+          )}
 
         </div>
-
-        <h3
-          style={{
-            color:
-              tx.amount.includes("-")
-                ? "#ef4444"
-                : "#22c55e",
-          }}
-        >
-          {tx.amount}
-        </h3>
 
       </div>
 
     </div>
 
-  )
-)}
-        </div>
-      </div>
-    </div>
   );
+
 }
