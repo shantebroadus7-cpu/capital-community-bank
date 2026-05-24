@@ -15,6 +15,10 @@ export default function Transfer() {
   });
 
   const [message, setMessage] = useState("");
+  const [beneficiaries, setBeneficiaries] = useState(
+  JSON.parse(localStorage.getItem("beneficiaries")) || []
+);
+  const [receipt, setReceipt] = useState(null);
 
   const handleChange = (e) => {
     setFormData({
@@ -22,7 +26,39 @@ export default function Transfer() {
       [e.target.name]: e.target.value,
     });
   };
+const saveBeneficiary = () => {
 
+  const beneficiaryData = {
+    recipient: formData.recipient,
+    bank: formData.bank,
+    accountNumber: formData.accountNumber,
+    routingNumber: formData.routingNumber,
+  };
+
+  const updatedBeneficiaries = [
+    beneficiaryData,
+    ...beneficiaries,
+  ];
+
+  setBeneficiaries(updatedBeneficiaries);
+
+  localStorage.setItem(
+    "beneficiaries",
+    JSON.stringify(updatedBeneficiaries)
+  );
+
+  setMessage("Beneficiary saved successfully");
+};const loadBeneficiary = (beneficiary) => {
+
+  setFormData({
+    ...formData,
+    recipient: beneficiary.recipient,
+    bank: beneficiary.bank,
+    accountNumber: beneficiary.accountNumber,
+    routingNumber: beneficiary.routingNumber,
+  });
+
+};
   const handleTransfer = (e) => {
     e.preventDefault();
 
@@ -44,12 +80,79 @@ export default function Transfer() {
       setMessage("Please complete all required fields.");
       return;
     }
+const currentBalance =
+  Number(localStorage.getItem("bank_balance")) || 250000;
+
+const transferAmount =
+  Number(formData.amount);
+
+if (transferAmount > currentBalance) {
+
+  setMessage("Insufficient funds");
+
+  return;
+}
+
+const updatedBalance =
+  currentBalance - transferAmount;
+
+localStorage.setItem(
+  "bank_balance",
+  updatedBalance
+);
+    const existingTransactions =
+      JSON.parse(localStorage.getItem("transactions")) || [];
+
+    const newTransaction = {
+  name: recipient,
+  bank,
+  accountNumber,
+  routingNumber,
+  amount: `-$${Number(amount).toLocaleString()}`,
+  status: "Completed",
+  date: new Date().toLocaleString(),
+};
+
+    existingTransactions.unshift(newTransaction);
+
+    localStorage.setItem(
+      "transactions",
+      JSON.stringify(existingTransactions)
+    );
+
+    const receiptData = {
+      id:
+        "TRX-" +
+        Math.floor(Math.random() * 100000000),
+
+      recipient: formData.recipient,
+
+      bank: formData.bank,
+
+      amount: formData.amount,
+
+      date: new Date().toLocaleString(),
+
+      status: "Completed",
+    };
+
+    setReceipt(receiptData);
 
     setMessage("Transfer request submitted successfully.");
 
     setTimeout(() => {
-      navigate("/dashboard");
-    }, 2500);
+
+  navigate("/receipt", {
+    state: {
+      recipient: formData.recipient,
+      bank: formData.bank,
+      accountNumber: formData.accountNumber,
+      routingNumber: formData.routingNumber,
+      amount: formData.amount,
+    },
+  });
+
+}, 2500);
   };
 
   return (
@@ -139,7 +242,89 @@ export default function Transfer() {
             Enter beneficiary banking information securely.
           </p>
         </div>
+{/* BENEFICIARIES */}
 
+<div
+  style={{
+    marginBottom: "35px",
+  }}
+>
+  <h3
+    style={{
+      color: "white",
+      marginBottom: "18px",
+    }}
+  >
+    Saved Beneficiaries
+  </h3>
+
+  {beneficiaries.length === 0 ? (
+
+    <p
+      style={{
+        color: "#94a3b8",
+      }}
+    >
+      No saved beneficiaries
+    </p>
+
+  ) : (
+
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns:
+          "repeat(auto-fit, minmax(240px, 1fr))",
+        gap: "15px",
+      }}
+    >
+      {beneficiaries.map((beneficiary, index) => (
+
+        <div
+          key={index}
+          onClick={() => loadBeneficiary(beneficiary)}
+          style={{
+            background: "#020617",
+            border: "1px solid #1e293b",
+            borderRadius: "18px",
+            padding: "18px",
+            cursor: "pointer",
+          }}
+        >
+          <h4
+            style={{
+              color: "white",
+              marginBottom: "8px",
+            }}
+          >
+            {beneficiary.recipient}
+          </h4>
+
+          <p
+            style={{
+              color: "#94a3b8",
+              fontSize: "14px",
+            }}
+          >
+            {beneficiary.bank}
+          </p>
+
+          <p
+            style={{
+              color: "#64748b",
+              fontSize: "13px",
+              marginTop: "6px",
+            }}
+          >
+            {beneficiary.accountNumber}
+          </p>
+        </div>
+
+      ))}
+    </div>
+
+  )}
+</div>
         <form onSubmit={handleTransfer}>
 
           <div
@@ -357,7 +542,24 @@ export default function Transfer() {
               cursor: "pointer",
               boxShadow: "0 15px 30px rgba(37,99,235,0.3)",
             }}
-          >
+          ><button
+  type="button"
+  onClick={saveBeneficiary}
+  style={{
+    width: "100%",
+    marginTop: "25px",
+    padding: "16px",
+    border: "1px solid #2563eb",
+    borderRadius: "16px",
+    background: "transparent",
+    color: "#3b82f6",
+    fontWeight: "bold",
+    fontSize: "16px",
+    cursor: "pointer",
+  }}
+>
+  Save Beneficiary
+</button>
             Submit Transfer Request
           </button>
 
@@ -373,11 +575,101 @@ export default function Transfer() {
               {message}
             </p>
           )}
+
+          {/* RECEIPT UI */}
+          {receipt && (
+
+            <div
+              style={{
+                marginTop: "35px",
+                background: "#020617",
+                border: "1px solid #1e293b",
+                borderRadius: "22px",
+                padding: "30px",
+              }}
+            >
+              <h2
+                style={{
+                  color: "white",
+                  marginBottom: "25px",
+                }}
+              >
+                Transfer Receipt
+              </h2>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns:
+                    "repeat(auto-fit, minmax(250px, 1fr))",
+                  gap: "20px",
+                }}
+              >
+
+                <div>
+                  <p style={labelStyle}>Receipt Number</p>
+                  <h3 style={valueStyle}>{receipt.id}</h3>
+                </div>
+
+                <div>
+                  <p style={labelStyle}>Recipient</p>
+                  <h3 style={valueStyle}>
+                    {receipt.recipient}
+                  </h3>
+                </div>
+
+                <div>
+                  <p style={labelStyle}>Bank</p>
+                  <h3 style={valueStyle}>
+                    {receipt.bank}
+                  </h3>
+                </div>
+
+                <div>
+                  <p style={labelStyle}>Amount</p>
+                  <h3 style={valueStyle}>
+                    ${Number(receipt.amount).toLocaleString()}
+                  </h3>
+                </div>
+
+                <div>
+                  <p style={labelStyle}>Date</p>
+                  <h3 style={valueStyle}>
+                    {receipt.date}
+                  </h3>
+                </div>
+
+                <div>
+                  <p style={labelStyle}>Status</p>
+                  <h3
+                    style={{
+                      color: "#22c55e",
+                    }}
+                  >
+                    {receipt.status}
+                  </h3>
+                </div>
+
+              </div>
+            </div>
+
+          )}
+
         </form>
       </div>
     </div>
   );
 }
+
+const labelStyle = {
+  color: "#94a3b8",
+  marginBottom: "8px",
+  fontSize: "14px",
+};
+
+const valueStyle = {
+  color: "white",
+};
 
 const inputStyle = {
   width: "100%",

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { generateStatement } from "../utils/generateStatement";
 import { useEffect } from "react";
 
 export default function Dashboard() {
@@ -230,13 +231,16 @@ export default function Dashboard() {
             </p>
 
             <h2
-              style={{
-                fontSize: "38px",
-                marginBottom: "25px",
-              }}
-            >
-              ${Number(balance).toLocaleString()}
-            </h2>
+  style={{
+    fontSize: "38px",
+    marginBottom: "25px",
+  }}
+>
+  $
+  {Number(
+    localStorage.getItem("bank_balance") || 250000
+  ).toLocaleString()}
+</h2>
 
             <div
               style={{
@@ -454,68 +458,88 @@ export default function Dashboard() {
             </p>
           </div>
 
-          {[
-            {
-              name: "Amazon Purchase",
-              amount: "-$240.00",
-              status: "Completed",
-            },
-            {
-              name: "Salary Deposit",
-              amount: "+$8,500.00",
-              status: "Completed",
-            },
-            {
-              name: "Wire Transfer",
-              amount: "-$1,200.00",
-              status: "Pending",
-            },
-          ].map((tx, index) => (
-            <div
-              key={index}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "18px 0",
-                borderBottom:
-                  index !== 2
-                    ? "1px solid #1e293b"
-                    : "none",
-              }}
-            >
-              <div>
-                <h4
-                  style={{
-                    color: "white",
-                    marginBottom: "6px",
-                  }}
-                >
-                  {tx.name}
-                </h4>
+          {(JSON.parse(localStorage.getItem("transactions")) || []).map(
+  (tx, index) => (
 
-                <p
-                  style={{
-                    color: "#94a3b8",
-                    fontSize: "14px",
-                  }}
-                >
-                  {tx.status}
-                </p>
-              </div>
+    <div
+      key={index}
 
-              <h3
-                style={{
-                  color:
-                    tx.amount.includes("+")
-                      ? "#22c55e"
-                      : "#f87171",
-                }}
-              >
-                {tx.amount}
-              </h3>
-            </div>
-          ))}
+      onClick={() =>
+        navigate("/receipt", {
+          state: {
+            recipient: tx.name,
+            bank:
+              tx.bank || "Capital Community Bank",
+            accountNumber:
+              tx.accountNumber || "************",
+            routingNumber:
+              tx.routingNumber || "021000021",
+            amount:
+              tx.amount
+                .replace("-", "")
+                .replace("$", ""),
+          },
+        })
+      }
+
+      style={{
+        background: "#020617",
+        border: "1px solid #1e293b",
+        borderRadius: "18px",
+        padding: "20px",
+        marginBottom: "16px",
+        cursor: "pointer",
+        transition: "0.3s",
+      }}
+    >
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+
+        <div>
+
+          <h4
+            style={{
+              color: "white",
+              marginBottom: "8px",
+            }}
+          >
+            {tx.name}
+          </h4>
+
+          <p
+            style={{
+              color: "#94a3b8",
+              fontSize: "14px",
+            }}
+          >
+            {tx.status}
+          </p>
+
+        </div>
+
+        <h3
+          style={{
+            color:
+              tx.amount.includes("-")
+                ? "#ef4444"
+                : "#22c55e",
+          }}
+        >
+          {tx.amount}
+        </h3>
+
+      </div>
+
+    </div>
+
+  )
+)}
         </div>
       </div>
     </div>

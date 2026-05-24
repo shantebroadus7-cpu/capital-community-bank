@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
+import Receipt from "./pages/Receipt";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Transfer from "./pages/Transfer";
@@ -12,6 +12,7 @@ function App() {
 
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/transfer" element={<Transfer />} />
+        <Route path="/receipt" element={<Receipt />} />
       </Routes>
     </BrowserRouter>
   );
