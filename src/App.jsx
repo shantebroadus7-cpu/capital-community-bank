@@ -11,7 +11,7 @@ export default function CapitalCommunityBank() {
       setLoading(true);
       setMessage("");
 
-      const response = await fetch("http://localhost:5000/api/login", {
+      const response = await fetch("https://capital-community-bank.onrender.com", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
