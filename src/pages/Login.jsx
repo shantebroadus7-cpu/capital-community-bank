@@ -47,68 +47,177 @@ export default function Login() {
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: "#0f172a",
+        background:
+          "linear-gradient(to right, #0f172a, #1e3a8a, #0f172a)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        fontFamily: "Arial",
+        padding: "20px",
       }}
     >
-      <form
-        onSubmit={handleLogin}
+      <div
         style={{
-          background: "#1e293b",
-          padding: "40px",
-          borderRadius: "12px",
-          width: "350px",
+          display: "flex",
+          width: "950px",
+          background: "#111827",
+          borderRadius: "20px",
+          overflow: "hidden",
+          boxShadow: "0 0 40px rgba(0,0,0,0.5)",
         }}
       >
-        <h1 style={{ color: "white", textAlign: "center" }}>
-          Capital Community Bank
-        </h1>
-
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+        {/* LEFT SIDE */}
+        <div
           style={{
-            width: "100%",
-            padding: "12px",
-            marginTop: "20px",
-          }}
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "12px",
-            marginTop: "15px",
-          }}
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            width: "100%",
-            padding: "12px",
-            marginTop: "20px",
-            backgroundColor: "#2563eb",
+            flex: 1,
+            background:
+              "linear-gradient(to bottom right, #2563eb, #1d4ed8)",
             color: "white",
-            border: "none",
+            padding: "60px 40px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
           }}
         >
-          {loading ? "Signing In..." : "Login"}
-        </button>
+          <h1
+            style={{
+              fontSize: "42px",
+              marginBottom: "20px",
+            }}
+          >
+            Capital Community Bank
+          </h1>
 
-        <p style={{ color: "white", marginTop: "15px" }}>
-          {message}
-        </p>
-      </form>
+          <p
+            style={{
+              fontSize: "18px",
+              lineHeight: "1.7",
+              opacity: 0.9,
+            }}
+          >
+            Secure digital banking with premium financial services,
+            international transfers, investment management, and
+            enterprise-grade account protection.
+          </p>
+
+          <div
+            style={{
+              marginTop: "40px",
+              padding: "20px",
+              background: "rgba(255,255,255,0.1)",
+              borderRadius: "12px",
+            }}
+          >
+            <h3>Trusted Online Banking</h3>
+
+            <p style={{ marginTop: "10px" }}>
+              ✔ Secure Transactions
+            </p>
+
+            <p>✔ 24/7 Account Access</p>
+
+            <p>✔ Global Banking Support</p>
+          </div>
+        </div>
+
+        {/* RIGHT SIDE */}
+        <div
+          style={{
+            flex: 1,
+            background: "#111827",
+            padding: "60px 40px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+          }}
+        >
+          <h2
+            style={{
+              color: "white",
+              fontSize: "32px",
+              marginBottom: "10px",
+            }}
+          >
+            Welcome Back
+          </h2>
+
+          <p
+            style={{
+              color: "#9ca3af",
+              marginBottom: "35px",
+            }}
+          >
+            Sign in to access your account dashboard
+          </p>
+
+          <form onSubmit={handleLogin}>
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "15px",
+                marginBottom: "20px",
+                borderRadius: "10px",
+                border: "1px solid #374151",
+                background: "#1f2937",
+                color: "white",
+                fontSize: "16px",
+              }}
+            />
+
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "15px",
+                marginBottom: "20px",
+                borderRadius: "10px",
+                border: "1px solid #374151",
+                background: "#1f2937",
+                color: "white",
+                fontSize: "16px",
+              }}
+            />
+
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                width: "100%",
+                padding: "15px",
+                background:
+                  "linear-gradient(to right, #2563eb, #1d4ed8)",
+                color: "white",
+                border: "none",
+                borderRadius: "10px",
+                fontSize: "16px",
+                fontWeight: "bold",
+                cursor: "pointer",
+              }}
+            >
+              {loading ? "Signing In..." : "Secure Login"}
+            </button>
+
+            {message && (
+              <p
+                style={{
+                  color: "#f87171",
+                  marginTop: "20px",
+                  textAlign: "center",
+                }}
+              >
+                {message}
+              </p>
+            )}
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
