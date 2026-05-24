@@ -22,9 +22,11 @@ export default function CapitalCommunityBank() {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("bank_token", data.token);
-        setMessage("Login successful");
-      } else {
+  localStorage.setItem("bank_token", data.token);
+  setMessage("Login successful");
+
+  window.location.href = "/dashboard";
+} else {
         setMessage(data.message || "Login failed");
       }
     } catch (error) {
