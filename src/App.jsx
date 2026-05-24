@@ -1,257 +1,415 @@
-import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DollarSign, CreditCard, Wallet, User, Bell } from 'lucide-react';
+import { useState } from "react";
 
-export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loginData, setLoginData] = useState({
-    email: '',
-    password: '',
-  });
+export default function CapitalCommunityBank() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
-  const handleChange = (e) => {
-    setLoginData({
-      ...loginData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-
+  const handleLogin = async () => {
     try {
-      const response = await fetch('https://capital-bank-api.onrender.com/login', {
-        method: 'POST',
+      setLoading(true);
+      setMessage("");
+
+      const response = await fetch("http://localhost:5000/api/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(loginData),
+        body: JSON.stringify({ username, password }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('token', data.token);
-        setIsLoggedIn(true);
+        localStorage.setItem("bank_token", data.token);
+        setMessage("Login successful");
       } else {
-        alert(data.message || 'Login failed');
+        setMessage(data.message || "Login failed");
       }
     } catch (error) {
-      console.error(error);
-      alert('Server error');
+      setMessage("Server connection error");
+    } finally {
+      setLoading(false);
     }
   };
-
-  if (!isLoggedIn) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
-        <Card className="w-full max-w-md shadow-2xl rounded-3xl border-0">
-          <CardContent className="p-8">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-blue-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Wallet className="text-white w-8 h-8" />
-              </div>
-
-              <h1 className="text-3xl font-bold text-gray-800">
-                Capital Community Bank
-              </h1>
-
-              <p className="text-gray-500 mt-2">
-                Secure Online Banking Portal
-              </p>
-            </div>
-
-            <form onSubmit={handleLogin} className="space-y-5">
-              <div>
-                <label className="text-sm font-medium text-gray-700 block mb-2">
-                  Email Address
-                </label>
-
-                <Input
-                  type="email"
-                  name="email"
-                  placeholder="Enter your email"
-                  value={loginData.email}
-                  onChange={handleChange}
-                  required
-                  className="h-12 rounded-xl"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 block mb-2">
-                  Password
-                </label>
-
-                <Input
-                  type="password"
-                  name="password"
-                  placeholder="Enter your password"
-                  value={loginData.password}
-                  onChange={handleChange}
-                  required
-                  className="h-12 rounded-xl"
-                />
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full h-12 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-base"
-              >
-                Login to Account
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-blue-700 text-white p-5 shadow-lg">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <div className="min-h-screen bg-slate-100 text-slate-900">
+      {/* Header */}
+      <header className="bg-slate-900 text-white shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Capital Community Bank</h1>
-            <p className="text-sm text-blue-100">Welcome back</p>
+            <h1 className="text-2xl font-bold tracking-wide">Capital Community Bank</h1>
+            <p className="text-sm text-slate-300">Secure Digital Banking Platform</p>
           </div>
 
-          <div className="flex items-center gap-4">
-            <Bell className="w-5 h-5" />
-            <User className="w-8 h-8 bg-white text-blue-700 rounded-full p-1" />
-          </div>
+          <nav className="hidden md:flex gap-8 text-sm font-medium">
+            <a href="#" className="hover:text-blue-300 transition">Accounts</a>
+            <a href="#" className="hover:text-blue-300 transition">Payments</a>
+            <a href="#" className="hover:text-blue-300 transition">Transfers</a>
+            <a href="#" className="hover:text-blue-300 transition">Support</a>
+          </nav>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="rounded-3xl shadow-lg border-0">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-gray-600 font-medium">Available Balance</h2>
-                <DollarSign className="text-green-600" />
-              </div>
+      {/* Hero */}
+      <section className="bg-gradient-to-r from-slate-900 to-blue-900 text-white py-20">
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <p className="uppercase tracking-[0.25em] text-blue-300 text-sm mb-4">
+              Trusted Community Banking
+            </p>
+            <h2 className="text-5xl font-bold leading-tight mb-6">
+              Banking Designed for Modern Financial Life
+            </h2>
+            <p className="text-slate-300 text-lg leading-relaxed mb-8">
+              Manage accounts, monitor transactions, transfer funds, and access
+              secure online banking tools from anywhere.
+            </p>
 
-              <h3 className="text-3xl font-bold text-gray-800">$12,540.00</h3>
-            </CardContent>
-          </Card>
+            <div className="flex gap-4 flex-wrap">
+              <button className="bg-white text-slate-900 px-6 py-3 rounded-2xl font-semibold hover:scale-105 transition">
+                Open Account
+              </button>
 
-          <Card className="rounded-3xl shadow-lg border-0">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-gray-600 font-medium">Savings Account</h2>
-                <Wallet className="text-blue-600" />
-              </div>
+              <button className="border border-white px-6 py-3 rounded-2xl font-semibold hover:bg-white hover:text-slate-900 transition">
+                Learn More
+              </button>
+            </div>
+          </div>
 
-              <h3 className="text-3xl font-bold text-gray-800">$8,200.00</h3>
-            </CardContent>
-          </Card>
+          {/* Login Card */}
+          <div className="bg-white text-slate-900 rounded-3xl shadow-2xl p-8 max-w-md w-full mx-auto">
+            <h3 className="text-2xl font-bold mb-2">Online Banking Login</h3>
+            <p className="text-slate-500 mb-6">
+              Secure access to your banking dashboard.
+            </p>
 
-          <Card className="rounded-3xl shadow-lg border-0">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-gray-600 font-medium">Credit Card</h2>
-                <CreditCard className="text-red-500" />
-              </div>
+            <div className="space-y-4">
+              <input
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                type="text"
+                placeholder="Username"
+                className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              />
 
-              <h3 className="text-3xl font-bold text-gray-800">$2,140.00</h3>
-            </CardContent>
-          </Card>
+              <input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="password"
+                placeholder="Password"
+                className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              />
+
+              <button
+                onClick={handleLogin}
+                disabled={loading}
+                className="w-full bg-blue-700 hover:bg-blue-800 text-white py-3 rounded-xl font-semibold transition"
+              >
+                {loading ? "Signing In..." : "Sign In Securely"}
+              </button>
+
+              {message && (
+                <p className="text-sm text-center text-slate-600">{message}</p>
+              )}
+            </div>
+
+            <div className="flex justify-between text-sm mt-5 text-blue-700">
+              <a href="#">Forgot Password?</a>
+              <a href="#">Enroll Now</a>
+            </div>
+          </div>
         </div>
+      </section>
 
-        <Tabs defaultValue="transactions" className="w-full">
-          <TabsList className="mb-6 rounded-xl bg-white shadow-sm p-1">
-            <TabsTrigger value="transactions">Transactions</TabsTrigger>
-            <TabsTrigger value="transfer">Transfer</TabsTrigger>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-          </TabsList>
+      {/* Banking Overview */}
+      <section className="max-w-7xl mx-auto px-6 py-16">
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="bg-white rounded-3xl p-8 shadow-lg border border-slate-200">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold">Checking Account</h3>
+              <span className="text-green-600 font-semibold">Active</span>
+            </div>
 
-          <TabsContent value="transactions">
-            <Card className="rounded-3xl shadow-lg border-0">
-              <CardContent className="p-6">
-                <h2 className="text-xl font-bold mb-6 text-gray-800">
-                  Recent Transactions
-                </h2>
+            <p className="text-slate-500 text-sm">Available Balance</p>
+            <h2 className="text-4xl font-bold mt-2">$24,850.20</h2>
 
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b pb-4">
-                    <div>
-                      <p className="font-medium text-gray-800">Amazon Purchase</p>
-                      <span className="text-sm text-gray-500">May 20, 2026</span>
-                    </div>
+            <button className="mt-6 bg-slate-900 text-white px-5 py-3 rounded-xl hover:bg-slate-700 transition">
+              View Details
+            </button>
+          </div>
 
-                    <p className="text-red-500 font-semibold">-$120.00</p>
-                  </div>
+          <div className="bg-white rounded-3xl p-8 shadow-lg border border-slate-200">
+            <h3 className="text-lg font-semibold mb-6">Recent Transactions</h3>
 
-                  <div className="flex items-center justify-between border-b pb-4">
-                    <div>
-                      <p className="font-medium text-gray-800">Salary Deposit</p>
-                      <span className="text-sm text-gray-500">May 18, 2026</span>
-                    </div>
-
-                    <p className="text-green-600 font-semibold">+$4,000.00</p>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-800">Netflix Subscription</p>
-                      <span className="text-sm text-gray-500">May 15, 2026</span>
-                    </div>
-
-                    <p className="text-red-500 font-semibold">-$15.99</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="transfer">
-            <Card className="rounded-3xl shadow-lg border-0">
-              <CardContent className="p-6 space-y-5">
-                <h2 className="text-xl font-bold text-gray-800">
-                  Transfer Funds
-                </h2>
-
-                <Input placeholder="Recipient Account Number" className="h-12 rounded-xl" />
-
-                <Input placeholder="Bank Name" className="h-12 rounded-xl" />
-
-                <Input placeholder="Amount" className="h-12 rounded-xl" />
-
-                <Button className="bg-blue-700 hover:bg-blue-800 rounded-xl h-12 w-full">
-                  Send Transfer
-                </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="profile">
-            <Card className="rounded-3xl shadow-lg border-0">
-              <CardContent className="p-6 space-y-4">
-                <h2 className="text-xl font-bold text-gray-800">Account Profile</h2>
-
+            <div className="space-y-5 text-sm">
+              <div className="flex justify-between">
                 <div>
-                  <p className="text-gray-500 text-sm">Full Name</p>
-                  <p className="font-medium text-gray-800">John Doe</p>
+                  <p className="font-medium">Payroll Deposit</p>
+                  <p className="text-slate-500">May 20, 2026</p>
                 </div>
+                <p className="text-green-600 font-semibold">+$4,500</p>
+              </div>
 
+              <div className="flex justify-between">
                 <div>
-                  <p className="text-gray-500 text-sm">Email Address</p>
-                  <p className="font-medium text-gray-800">john@example.com</p>
+                  <p className="font-medium">Electric Utility</p>
+                  <p className="text-slate-500">May 18, 2026</p>
                 </div>
+                <p className="text-red-500 font-semibold">-$142</p>
+              </div>
 
+              <div className="flex justify-between">
                 <div>
-                  <p className="text-gray-500 text-sm">Account Number</p>
-                  <p className="font-medium text-gray-800">**** 4587</p>
+                  <p className="font-medium">Online Transfer</p>
+                  <p className="text-slate-500">May 16, 2026</p>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </main>
+                <p className="text-red-500 font-semibold">-$800</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-700 to-slate-900 text-white rounded-3xl p-8 shadow-lg">
+            <h3 className="text-xl font-semibold mb-4">Security Center</h3>
+
+            <div className="space-y-4 text-sm text-slate-200">
+              <div className="bg-white/10 rounded-2xl p-4">
+                Multi-factor authentication enabled
+              </div>
+
+              <div className="bg-white/10 rounded-2xl p-4">
+                Real-time fraud monitoring active
+              </div>
+
+              <div className="bg-white/10 rounded-2xl p-4">
+                256-bit encrypted banking sessions
+              </div>
+            </div>
+
+            <button className="mt-8 bg-white text-slate-900 px-5 py-3 rounded-xl font-semibold hover:scale-105 transition">
+              Manage Security
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Services */}
+      <section className="bg-white py-16 border-t border-slate-200">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <p className="uppercase text-blue-700 tracking-[0.2em] text-sm mb-3">
+              Digital Services
+            </p>
+            <h2 className="text-4xl font-bold">Everything You Need in One Platform</h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-slate-50 rounded-3xl p-8 border border-slate-200 hover:shadow-lg transition">
+              <h3 className="text-xl font-semibold mb-3">Mobile Banking</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Access your finances anytime with secure mobile banking features.
+              </p>
+            </div>
+
+            <div className="bg-slate-50 rounded-3xl p-8 border border-slate-200 hover:shadow-lg transition">
+              <h3 className="text-xl font-semibold mb-3">Instant Transfers</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Send and receive funds instantly with protected transfer systems.
+              </p>
+            </div>
+
+            <div className="bg-slate-50 rounded-3xl p-8 border border-slate-200 hover:shadow-lg transition">
+              <h3 className="text-xl font-semibold mb-3">Bill Payments</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Schedule recurring payments and monitor your billing activity.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-slate-900 text-slate-300 py-10">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between gap-8">
+          <div>
+            <h3 className="text-xl font-bold text-white">Capital Community Bank</h3>
+            <p className="mt-3 max-w-md text-sm leading-relaxed">
+              Providing secure, reliable, and community-focused financial services
+              through innovative digital banking solutions.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-10 text-sm">
+            <div>
+              <h4 className="text-white font-semibold mb-3">Banking</h4>
+              <ul className="space-y-2">
+                <li>Savings Accounts</li>
+                <li>Loans</li>
+                <li>Credit Cards</li>
+                <li>Business Banking</li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-white font-semibold mb-3">Support</h4>
+              <ul className="space-y-2">
+                <li>Customer Care</li>
+                <li>Fraud Protection</li>
+                <li>Security Center</li>
+                <li>Contact Us</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
+
+/*
+====================================================
+BACKEND SERVER SETUP (Node.js + Express)
+====================================================
+
+1. Create backend folder:
+
+mkdir backend
+cd backend
+
+2. Install dependencies:
+
+npm init -y
+npm install express cors dotenv bcryptjs jsonwebtoken mongoose
+npm install nodemon --save-dev
+
+3. Create server.js
+
+----------------------------------------------------
+
+const express = require('express');
+const cors = require('cors');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+mongoose.connect(process.env.MONGO_URI)
+.then(() => console.log('Database Connected'));
+
+const UserSchema = new mongoose.Schema({
+  username: String,
+  password: String,
+  balance: Number,
+});
+
+const User = mongoose.model('User', UserSchema);
+
+app.post('/api/register', async (req, res) => {
+  try {
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
+    const user = new User({
+      username: req.body.username,
+      password: hashedPassword,
+      balance: 24850.20,
+    });
+
+    await user.save();
+
+    res.json({ message: 'Account created successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Registration failed' });
+  }
+});
+
+app.post('/api/login', async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.body.username });
+
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    const validPassword = await bcrypt.compare(
+      req.body.password,
+      user.password
+    );
+
+    if (!validPassword) {
+      return res.status(400).json({ message: 'Invalid password' });
+    }
+
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    res.json({
+      token,
+      username: user.username,
+      balance: user.balance,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.listen(5000, () => {
+  console.log('Backend running on port 5000');
+});
+
+----------------------------------------------------
+
+4. Create .env file:
+
+MONGO_URI=your_mongodb_connection
+JWT_SECRET=capitalcommunitybanksecurekey
+
+5. Run backend:
+
+npx nodemon server.js
+
+====================================================
+MONGODB DATABASE
+====================================================
+
+Use MongoDB Atlas:
+https://www.mongodb.com/atlas
+
+Create cluster and copy connection string.
+
+====================================================
+DEPLOYMENT
+====================================================
+
+Frontend:
+- Vercel
+- Netlify
+
+Backend:
+- Render
+- Railway
+- AWS EC2
+
+====================================================
+SECURITY FEATURES TO ADD NEXT
+====================================================
+
+- Two-factor authentication
+- Transaction history APIs
+- Admin dashboard
+- Fraud monitoring
+- Email verification
+- Password reset system
+- Secure banking sessions
+- HTTPS SSL encryption
+- Role-based account access
+
+*/
