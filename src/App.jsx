@@ -11,7 +11,7 @@ export default function CapitalCommunityBank() {
       setLoading(true);
       setMessage("");
 
-      const response = await fetch("https://capital-community-bank-online.vercel.app/", {
+      const response = await fetch("https://capital-bank-api.onrender.com", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
