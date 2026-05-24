@@ -1,7 +1,24 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const username = localStorage.getItem("bank_username");
+  const balance = localStorage.getItem("bank_balance");
+  useEffect(() => {
+  const token = localStorage.getItem("bank_token");
+
+  if (!token) {
+    navigate("/");
+  }
+}, []);
+  useEffect(() => {
+  const token = localStorage.getItem("bank_token");
+
+  if (!token) {
+    navigate("/");
+  }
+}, []);
 
   const logout = () => {
     localStorage.removeItem("bank_token");
@@ -158,7 +175,7 @@ export default function Dashboard() {
                 marginBottom: "8px",
               }}
             >
-              Welcome Back 👋
+              Welcome Back, {username} 👋
             </h1>
 
             <p
@@ -218,7 +235,7 @@ export default function Dashboard() {
                 marginBottom: "25px",
               }}
             >
-              $250,000.00
+              ${Number(balance).toLocaleString()}
             </h2>
 
             <div

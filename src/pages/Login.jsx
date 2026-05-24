@@ -31,6 +31,8 @@ export default function Login() {
 
       if (response.ok) {
         localStorage.setItem("bank_token", data.token);
+        localStorage.setItem("bank_username", data.username);
+        localStorage.setItem("bank_balance", data.balance);
 
         navigate("/dashboard");
       } else {
