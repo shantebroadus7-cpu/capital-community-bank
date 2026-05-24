@@ -90,13 +90,14 @@ app.post("/api/transfer", async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message:
-        "Failed to fetch transactions",
+      message: "Failed to fetch transactions",
+      error: error.message,
     });
 
   }
 
 });
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {

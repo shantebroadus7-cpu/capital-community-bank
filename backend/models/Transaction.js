@@ -1,43 +1,47 @@
 const mongoose = require("mongoose");
 
-const TransactionSchema = new mongoose.Schema({
+const TransactionSchema =
+  new mongoose.Schema({
 
-  sender: {
-    type: String,
-    required: true,
-  },
+    sender: {
+      type: String,
+      required: true,
+    },
 
-  recipient: {
-    type: String,
-    required: true,
-  },
+    recipient: {
+      type: String,
+      required: true,
+    },
 
-  bank: {
-    type: String,
-    required: true,
-  },
+    bank: {
+      type: String,
+      required: true,
+    },
 
-  accountNumber: {
-    type: String,
-    required: true,
-  },
+    accountNumber: {
+      type: String,
+      required: true,
+    },
 
-  amount: {
-    type: Number,
-    required: true,
-  },
+    amount: {
+      type: Number,
+      required: true,
+    },
 
-  status: {
-    type: String,
-    default: "Completed",
-  },
+    status: {
+      type: String,
+      default: "Completed",
+    },
 
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
 
-});
+  });
 
 module.exports =
-  mongoose.model("Transaction", TransactionSchema);
+  mongoose.model(
+    "Transaction",
+    TransactionSchema
+  );
