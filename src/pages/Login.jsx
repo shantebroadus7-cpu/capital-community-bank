@@ -353,7 +353,18 @@ export default function Login() {
             >
               {loading ? "Signing In..." : "Access Secure Banking"}
             </button>
-
+<p
+  onClick={() => navigate("/register")}
+  style={{
+    color: "#3b82f6",
+    marginTop: "20px",
+    textAlign: "center",
+    cursor: "pointer",
+    fontSize: "14px",
+  }}
+>
+  Open New Account
+</p>
             {message && (
               <p
                 style={{

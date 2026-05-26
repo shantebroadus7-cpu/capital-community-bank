@@ -21,6 +21,41 @@ app.use(cors({
 
 app.use(express.json());
 
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: "Authentication required",
+    });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (error, user) => {
+    if (error) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid or expired token",
+      });
+    }
+
+    req.user = user;
+    next();
+  });
+};
+
+const requireAdmin = (req, res, next) => {
+  if (!req.user || req.user.role !== "admin") {
+    return res.status(403).json({
+      success: false,
+      message: "Admin access required",
+    });
+  }
+
+  next();
+};
+
 /* =========================
    DATABASE CONNECTION
 ========================= */
@@ -60,6 +95,12 @@ const UserSchema =
     balance: {
       type: Number,
       default: 250000,
+    },
+
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
     },
 
   });
@@ -176,6 +217,7 @@ app.post("/api/login", async (req, res) => {
 
       {
         id: user._id,
+        role: user.role,
       },
 
       process.env.JWT_SECRET,
@@ -196,6 +238,8 @@ app.post("/api/login", async (req, res) => {
 
       balance: user.balance,
 
+      role: user.role,
+
     });
 
   } catch (error) {
@@ -209,6 +253,89 @@ app.post("/api/login", async (req, res) => {
 
   }
 
+});
+
+/* =========================
+   ADMIN ROUTES
+========================= */
+
+app.post("/api/admin/create-admin", async (req, res) => {
+  try {
+    const { username, password, secret } = req.body;
+
+    if (secret !== process.env.ADMIN_SECRET) {
+      return res.status(403).json({
+        success: false,
+        message: "Invalid admin creation secret",
+      });
+    }
+
+    const existingUser = await User.findOne({ username });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const adminUser = new User({
+      username,
+      password: hashedPassword,
+      role: "admin",
+      balance: 250000,
+    });
+
+    await adminUser.save();
+
+    res.json({
+      success: true,
+      message: "Admin account created successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Admin creation failed",
+    });
+  }
+});
+
+app.get("/api/admin/users", authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const users = await User.find().select("username balance role createdAt").sort({ createdAt: -1 });
+    res.json({ users });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch users",
+    });
+  }
+});
+
+app.get("/api/admin/overview", authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const totalTransactions = await Transaction.countDocuments();
+    const users = await User.find().select("username balance role").sort({ createdAt: -1 }).limit(5);
+    const transactions = await Transaction.find().sort({ createdAt: -1 }).limit(5);
+
+    res.json({
+      totalUsers,
+      totalTransactions,
+      users,
+      transactions,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to load admin overview",
+    });
+  }
 });
 
 /* =========================
