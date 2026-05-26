@@ -235,9 +235,14 @@ app.post("/api/login", async (req, res) => {
 
     // FIND USER
     const user =
-      await User.findOne({
-        username,
-      });
+  await User.findOne({
+    username,
+  });
+
+console.log(
+  "LOGIN USER:",
+  user
+);
 
     if (!user) {
 
@@ -258,7 +263,10 @@ app.post("/api/login", async (req, res) => {
         password,
         user.password
       );
-
+console.log(
+  "PASSWORD MATCH:",
+  validPassword
+);
     if (!validPassword) {
 
       return res.status(401).json({
