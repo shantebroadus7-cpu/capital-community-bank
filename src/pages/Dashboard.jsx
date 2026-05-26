@@ -9,34 +9,37 @@ export default function Dashboard() {
     useState([]);
 
   const username =
-    localStorage.getItem("bank_username");
+    localStorage.getItem("bank_username") || "Customer";
 
   const balance =
     Number(
       localStorage.getItem("bank_balance")
     ) || 250000;
 
-  useEffect(() => {
-
-    const token =
-      localStorage.getItem("bank_token");
-
-    if (!token) {
-      navigate("/");
-    }
-
-    fetchTransactions();
-
-  }, []);
+  const API_URL =
+    import.meta.env.VITE_API_URL ||
+    "https://capital-bank-api.onrender.com";
 
   const fetchTransactions = async () => {
 
     try {
 
-      const API_URL = import.meta.env.VITE_API_URL || "https://capital-bank-api.onrender.com";
       const response = await fetch(
         `${API_URL}/api/transactions`
-      setTransactions(data);
+      );
+
+      const data =
+        await response.json();
+
+      if (Array.isArray(data)) {
+
+        setTransactions(data);
+
+      } else {
+
+        setTransactions([]);
+
+      }
 
     } catch (error) {
 
@@ -46,9 +49,28 @@ export default function Dashboard() {
 
   };
 
+  useEffect(() => {
+
+    const token =
+      localStorage.getItem("bank_token");
+
+    if (!token) {
+
+      navigate("/");
+
+    } else {
+
+      fetchTransactions();
+
+    }
+
+  }, []);
+
   const logout = () => {
 
     localStorage.removeItem("bank_token");
+    localStorage.removeItem("bank_username");
+    localStorage.removeItem("bank_balance");
 
     navigate("/");
 
@@ -321,6 +343,7 @@ export default function Dashboard() {
               cursor: "pointer",
             }}
           >
+
             <h3>Transfer Funds</h3>
 
             <p
@@ -343,6 +366,7 @@ export default function Dashboard() {
               color: "white",
             }}
           >
+
             <h3>Manage Cards</h3>
 
             <p
@@ -411,18 +435,12 @@ export default function Dashboard() {
 
               <div
                 key={index}
-                onClick={() =>
-                  navigate("/receipt", {
-                    state: tx,
-                  })
-                }
                 style={{
                   background: "#020617",
                   border: "1px solid #1e293b",
                   borderRadius: "18px",
                   padding: "20px",
                   marginBottom: "15px",
-                  cursor: "pointer",
                 }}
               >
 
@@ -451,7 +469,7 @@ export default function Dashboard() {
                         fontSize: "14px",
                       }}
                     >
-                      {tx.status}
+                      {tx.bank}
                     </p>
 
                   </div>

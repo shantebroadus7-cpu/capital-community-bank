@@ -19,7 +19,7 @@ export default function Login() {
 
     try {
       const response = await fetch(
-        `${API_URL}/api/login`,
+        `${"https://capital-bank-api.onrender.com/api/login`,
         {
           method: "POST",
           headers: {
