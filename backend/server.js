@@ -29,7 +29,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 .then(() => {
 
-  console.log("MongoDB Connected");
+  console.log("MongoDB Connected Successfully");
 
 })
 
@@ -62,8 +62,11 @@ const authenticateToken = (
   if (!token) {
 
     return res.status(401).json({
+
       success: false,
+
       message: "Authentication required",
+
     });
 
   }
@@ -76,8 +79,11 @@ const authenticateToken = (
       if (error) {
 
         return res.status(403).json({
+
           success: false,
+
           message: "Invalid token",
+
         });
 
       }
@@ -98,9 +104,12 @@ const authenticateToken = (
 app.get("/", (req, res) => {
 
   res.json({
+
     success: true,
+
     message:
       "Capital Community Bank API Running",
+
   });
 
 });
@@ -118,6 +127,21 @@ app.post("/api/register", async (req, res) => {
       password,
     } = req.body;
 
+    // VALIDATION
+    if (!username || !password) {
+
+      return res.status(400).json({
+
+        success: false,
+
+        message:
+          "Username and password required",
+
+      });
+
+    }
+
+    // CHECK EXISTING USER
     const existingUser =
       await User.findOne({
         username,
@@ -126,15 +150,21 @@ app.post("/api/register", async (req, res) => {
     if (existingUser) {
 
       return res.status(400).json({
+
         success: false,
-        message: "User already exists",
+
+        message:
+          "User already exists",
+
       });
 
     }
 
+    // HASH PASSWORD
     const hashedPassword =
       await bcrypt.hash(password, 10);
 
+    // CREATE USER
     const newUser =
       new User({
 
@@ -150,7 +180,7 @@ app.post("/api/register", async (req, res) => {
 
     await newUser.save();
 
-    res.json({
+    res.status(201).json({
 
       success: true,
 
@@ -189,6 +219,21 @@ app.post("/api/login", async (req, res) => {
       password,
     } = req.body;
 
+    // VALIDATION
+    if (!username || !password) {
+
+      return res.status(400).json({
+
+        success: false,
+
+        message:
+          "Username and password required",
+
+      });
+
+    }
+
+    // FIND USER
     const user =
       await User.findOne({
         username,
@@ -200,12 +245,14 @@ app.post("/api/login", async (req, res) => {
 
         success: false,
 
-        message: "User not found",
+        message:
+          "User not found",
 
       });
 
     }
 
+    // CHECK PASSWORD
     const validPassword =
       await bcrypt.compare(
         password,
@@ -218,12 +265,14 @@ app.post("/api/login", async (req, res) => {
 
         success: false,
 
-        message: "Invalid password",
+        message:
+          "Invalid password",
 
       });
 
     }
 
+    // CREATE TOKEN
     const token = jwt.sign(
 
       {
@@ -239,6 +288,7 @@ app.post("/api/login", async (req, res) => {
 
     );
 
+    // SUCCESS RESPONSE
     res.json({
 
       success: true,
@@ -261,7 +311,8 @@ app.post("/api/login", async (req, res) => {
 
       success: false,
 
-      message: "Login failed",
+      message:
+        "Login failed",
 
     });
 
@@ -324,7 +375,8 @@ app.post(
 
         success: false,
 
-        message: "Transfer failed",
+        message:
+          "Transfer failed",
 
       });
 
