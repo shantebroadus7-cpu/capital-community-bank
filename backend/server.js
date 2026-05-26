@@ -443,3 +443,61 @@ app.listen(PORT, () => {
   );
 
 });
+
+/* =========================
+   ADMIN USER MANAGEMENT
+========================= */
+
+// Get single user by id
+app.get("/api/admin/user/:id", authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("username balance role createdAt");
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.json({ success: true, user });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: "Failed to fetch user" });
+  }
+});
+
+// Update user (balance, role)
+app.put("/api/admin/user/:id", authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { balance, role } = req.body;
+
+    const updates = {};
+    if (typeof balance !== 'undefined') updates.balance = balance;
+    if (typeof role === 'string') updates.role = role;
+
+    const user = await User.findByIdAndUpdate(req.params.id, updates, { new: true }).select("username balance role createdAt");
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.json({ success: true, user });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: "Failed to update user" });
+  }
+});
+
+// Delete user
+app.delete("/api/admin/user/:id", authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.json({ success: true, message: "User deleted" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: "Failed to delete user" });
+  }
+});

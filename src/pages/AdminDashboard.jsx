@@ -7,12 +7,21 @@ function formatMoney(value) {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("overview");
   const [overview, setOverview] = useState({
     totalUsers: 0,
     totalTransactions: 0,
     users: [],
     transactions: [],
   });
+  const [allUsers, setAllUsers] = useState([]);
+  const [allTransactions, setAllTransactions] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterRole, setFilterRole] = useState("");
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [editBalance, setEditBalance] = useState(0);
+  const [editRole, setEditRole] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
@@ -23,13 +32,20 @@ export default function AdminDashboard() {
       return;
     }
 
-    fetchOverview(token);
-  }, []);
+    if (activeTab === "overview") {
+      fetchOverview(token);
+    } else if (activeTab === "customers") {
+      fetchAllUsers(token);
+    } else if (activeTab === "transactions") {
+      fetchAllTransactions(token);
+    }
+  }, [activeTab]);
 
   const fetchOverview = async (token) => {
     try {
+      const API_URL = import.meta.env.VITE_API_URL || "https://capital-bank-api.onrender.com";
       const response = await fetch(
-        "https://capital-bank-api.onrender.com/api/admin/overview",
+        `${API_URL}/api/admin/overview`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -50,6 +66,134 @@ export default function AdminDashboard() {
       setOverview(data);
     } catch (error) {
       setMessage(error.message || "Failed to load admin dashboard");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  function filteredUsers(users, query, role) {
+    let list = users || [];
+    if (role) list = list.filter((u) => u.role === role);
+    if (query) {
+      const q = query.toLowerCase();
+      list = list.filter((u) => u.username.toLowerCase().includes(q) || String(u._id).includes(q));
+    }
+    return list;
+  }
+
+  const openUserModal = (user) => {
+    setSelectedUser(user);
+    setEditBalance(user.balance || 0);
+    setEditRole(user.role || "user");
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedUser(null);
+  };
+
+  const handleUpdateUser = async () => {
+    if (!selectedUser) return;
+    const token = localStorage.getItem("bank_admin_token");
+    const API_URL = import.meta.env.VITE_API_URL || "https://capital-bank-api.onrender.com";
+
+    try {
+      const res = await fetch(`${API_URL}/api/admin/user/${selectedUser._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ balance: editBalance, role: editRole }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update user");
+
+      const data = await res.json();
+      setMessage("User updated successfully");
+      // refresh user list
+      fetchAllUsers(token);
+      handleCloseModal();
+    } catch (error) {
+      setMessage(error.message || "Update failed");
+    }
+  };
+
+  const handleDeleteUserPrompt = async (user) => {
+    const ok = window.confirm(`Delete user ${user.username}? This action cannot be undone.`);
+    if (!ok) return;
+
+    const token = localStorage.getItem("bank_admin_token");
+    const API_URL = import.meta.env.VITE_API_URL || "https://capital-bank-api.onrender.com";
+
+    try {
+      const res = await fetch(`${API_URL}/api/admin/user/${user._id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to delete user");
+
+      setMessage("User deleted");
+      fetchAllUsers(token);
+    } catch (error) {
+      setMessage(error.message || "Delete failed");
+    }
+  };
+
+  const fetchAllUsers = async (token) => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "https://capital-bank-api.onrender.com";
+      const response = await fetch(
+        `${API_URL}/api/admin/users`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          handleLogout();
+          return;
+        }
+
+        throw new Error("Unable to load users");
+      }
+
+      const data = await response.json();
+      setAllUsers(data.users || []);
+    } catch (error) {
+      setMessage(error.message || "Failed to load users");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAllTransactions = async (token) => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "https://capital-bank-api.onrender.com";
+      const response = await fetch(
+        `${API_URL}/api/transactions`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Unable to load transactions");
+      }
+
+      const data = await response.json();
+      setAllTransactions(data || []);
+    } catch (error) {
+      setMessage(error.message || "Failed to load transactions");
     } finally {
       setLoading(false);
     }
@@ -91,19 +235,21 @@ export default function AdminDashboard() {
           </div>
 
           <div style={{ display: "grid", gap: "10px" }}>
-            {["Overview", "Customers", "Transactions", "Settings"].map((item) => (
+            {["overview", "customers", "transactions", "settings"].map((tab) => (
               <div
-                key={item}
+                key={tab}
+                onClick={() => setActiveTab(tab)}
                 style={{
                   padding: "14px 18px",
                   borderRadius: "14px",
-                  background: item === "Overview" ? "linear-gradient(to right, #2563eb, #1d4ed8)" : "transparent",
+                  background: activeTab === tab ? "linear-gradient(to right, #2563eb, #1d4ed8)" : "transparent",
                   color: "white",
-                  cursor: "default",
+                  cursor: "pointer",
                   fontSize: "15px",
+                  transition: "all 0.2s",
                 }}
               >
-                {item}
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
               </div>
             ))}
           </div>
@@ -126,82 +272,302 @@ export default function AdminDashboard() {
       </div>
 
       <main style={{ flex: 1, padding: "34px", overflowY: "auto" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: "18px",
-            marginBottom: "32px",
-          }}
-        >
-          <div>
-            <h1 style={{ margin: 0 }}>Welcome back, {adminUsername}</h1>
-            <p style={{ color: "#94a3b8", marginTop: "8px" }}>
-              Manage users, review transactions, and monitor bank activity.
-            </p>
-          </div>
-          <div
-            style={{
-              background: "#0f172a",
-              padding: "18px 24px",
-              borderRadius: "18px",
-              minWidth: "200px",
-              textAlign: "right",
-            }}
-          >
-            <p style={{ color: "#94a3b8", margin: 0 }}>Total customers</p>
-            <h2 style={{ marginTop: "10px" }}>{overview.totalUsers}</h2>
-          </div>
-        </div>
+        {activeTab === "overview" && (
+          <>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                gap: "18px",
+                marginBottom: "32px",
+              }}
+            >
+              <div>
+                <h1 style={{ margin: 0 }}>Welcome back, {adminUsername}</h1>
+                <p style={{ color: "#94a3b8", marginTop: "8px" }}>
+                  Manage users, review transactions, and monitor bank activity.
+                </p>
+              </div>
+              <div
+                style={{
+                  background: "#0f172a",
+                  padding: "18px 24px",
+                  borderRadius: "18px",
+                  minWidth: "200px",
+                  textAlign: "right",
+                }}
+              >
+                <p style={{ color: "#94a3b8", margin: 0 }}>Total customers</p>
+                <h2 style={{ marginTop: "10px" }}>{overview.totalUsers}</h2>
+              </div>
+            </div>
 
-        {message && (
-          <div
-            style={{
-              marginBottom: "20px",
-              padding: "18px",
-              borderRadius: "16px",
-              background: "#7f1d1d",
-              color: "white",
-            }}
-          >
-            {message}
+            {message && (
+              <div
+                style={{
+                  marginBottom: "20px",
+                  padding: "18px",
+                  borderRadius: "16px",
+                  background: "#7f1d1d",
+                  color: "white",
+                }}
+              >
+                {message}
+              </div>
+            )}
+
+            <div style={{ display: "grid", gap: "22px" }}>
+              <section
+                style={{
+                  background: "#0f172a",
+                  borderRadius: "24px",
+                  padding: "28px",
+                  border: "1px solid #1e293b",
+                }}
+              >
+                <h2 style={{ margin: "0 0 20px 0" }}>Key statistics</h2>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "18px" }}>
+                  <div style={{ background: "#020617", padding: "18px", borderRadius: "18px" }}>
+                    <p style={{ color: "#94a3b8", marginBottom: "10px" }}>Active users</p>
+                    <h3 style={{ margin: 0 }}>{overview.totalUsers}</h3>
+                  </div>
+                  <div style={{ background: "#020617", padding: "18px", borderRadius: "18px" }}>
+                    <p style={{ color: "#94a3b8", marginBottom: "10px" }}>Transactions</p>
+                    <h3 style={{ margin: 0 }}>{overview.totalTransactions}</h3>
+                  </div>
+                  <div style={{ background: "#020617", padding: "18px", borderRadius: "18px" }}>
+                    <p style={{ color: "#94a3b8", marginBottom: "10px" }}>Latest update</p>
+                    <h3 style={{ margin: 0 }}>Real time</h3>
+                  </div>
+                </div>
+              </section>
+
+              <section
+                style={{
+                  display: "grid",
+                  gap: "22px",
+                  gridTemplateColumns: "2fr 3fr",
+                }}
+              >
+                <div
+                  style={{
+                    background: "#0f172a",
+                    borderRadius: "24px",
+                    padding: "28px",
+                    border: "1px solid #1e293b",
+                  }}
+                >
+                  <h2 style={{ margin: "0 0 22px 0" }}>Latest customers</h2>
+                  {loading ? (
+                    <p>Loading customers…</p>
+                  ) : overview.users.length === 0 ? (
+                    <p style={{ color: "#94a3b8" }}>No customer records found.</p>
+                  ) : (
+                    <div style={{ display: "grid", gap: "14px" }}>
+                      {overview.users.map((user) => (
+                        <div
+                          key={user._id}
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            padding: "16px",
+                            borderRadius: "14px",
+                            background: "#020617",
+                          }}
+                        >
+                          <div>
+                            <p style={{ margin: 0, fontWeight: "bold" }}>{user.username}</p>
+                            <p style={{ margin: 0, color: "#94a3b8", fontSize: "13px" }}>{user.role}</p>
+                          </div>
+                          <div style={{ textAlign: "right" }}>
+                            <p style={{ margin: 0, fontWeight: "bold" }}>{formatMoney(user.balance)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div
+                  style={{
+                    background: "#0f172a",
+                    borderRadius: "24px",
+                    padding: "28px",
+                    border: "1px solid #1e293b",
+                  }}
+                >
+                  <h2 style={{ margin: "0 0 22px 0" }}>Recent transactions</h2>
+                  {loading ? (
+                    <p>Loading transactions…</p>
+                  ) : overview.transactions.length === 0 ? (
+                    <p style={{ color: "#94a3b8" }}>No transaction records found.</p>
+                  ) : (
+                    <div style={{ display: "grid", gap: "14px" }}>
+                      {overview.transactions.map((transaction) => (
+                        <div
+                          key={transaction._id}
+                          style={{
+                            display: "grid",
+                            gap: "6px",
+                            padding: "16px",
+                            borderRadius: "14px",
+                            background: "#020617",
+                          }}
+                        >
+                          <div style={{ display: "flex", justifyContent: "space-between", gap: "12px" }}>
+                            <p style={{ margin: 0, fontWeight: "bold" }}>{transaction.sender} → {transaction.recipient}</p>
+                            <p style={{ margin: 0 }}>{formatMoney(transaction.amount)}</p>
+                          </div>
+                          <p style={{ margin: 0, color: "#94a3b8", fontSize: "13px" }}>
+                            {transaction.bank} • {new Date(transaction.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </section>
+            </div>
+          </>
+        )}
+
+        {activeTab === "customers" && (
+          <div>
+            <h1 style={{ margin: "0 0 8px 0" }}>Customers</h1>
+            <p style={{ color: "#94a3b8", marginBottom: "12px" }}>Manage and view all customer accounts</p>
+
+            <div style={{ display: "flex", gap: "12px", marginBottom: "18px", alignItems: "center" }}>
+              <input
+                placeholder="Search by username or id"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ padding: "10px", borderRadius: "10px", border: "1px solid #334155", background: "#020617", color: "white", width: "320px" }}
+              />
+
+              <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)} style={{ padding: "10px", borderRadius: "10px", background: "#020617", color: "white", border: "1px solid #334155" }}>
+                <option value="">All roles</option>
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
+
+              <button onClick={() => { const token = localStorage.getItem('bank_admin_token'); setLoading(true); fetchAllUsers(token); }} style={{ padding: "10px 14px", borderRadius: "10px", background: "#2563eb", color: "white", border: "none", cursor: "pointer" }}>
+                Refresh
+              </button>
+            </div>
+
+            {message && (
+              <div
+                style={{
+                  marginBottom: "20px",
+                  padding: "18px",
+                  borderRadius: "16px",
+                  background: "#7f1d1d",
+                  color: "white",
+                }}
+              >
+                {message}
+              </div>
+            )}
+
+            <div
+              style={{
+                background: "#0f172a",
+                borderRadius: "24px",
+                padding: "18px",
+                border: "1px solid #1e293b",
+              }}
+            >
+              {loading ? (
+                <p>Loading customers…</p>
+              ) : filteredUsers(allUsers, searchQuery, filterRole).length === 0 ? (
+                <p style={{ color: "#94a3b8" }}>No customers found.</p>
+              ) : (
+                <div style={{ display: "grid", gap: "12px" }}>
+                  {filteredUsers(allUsers, searchQuery, filterRole).map((user) => (
+                    <div
+                      key={user._id}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "2fr 1fr 1fr 1fr 100px",
+                        gap: "12px",
+                        alignItems: "center",
+                        padding: "12px",
+                        borderRadius: "12px",
+                        background: "#020617",
+                      }}
+                    >
+                      <div>
+                        <p style={{ margin: 0, fontWeight: "bold" }}>{user.username}</p>
+                        <p style={{ margin: 0, color: "#94a3b8", fontSize: "13px" }}>ID: {user._id}</p>
+                      </div>
+                      <div>
+                        <p style={{ margin: 0, color: "#94a3b8", fontSize: "12px" }}>Balance</p>
+                        <p style={{ margin: 0, fontWeight: "bold" }}>{formatMoney(user.balance)}</p>
+                      </div>
+                      <div>
+                        <p style={{ margin: 0, color: "#94a3b8", fontSize: "12px" }}>Role</p>
+                        <p style={{ margin: 0, fontWeight: "bold", textTransform: "capitalize" }}>{user.role}</p>
+                      </div>
+                      <div>
+                        <p style={{ margin: 0, color: "#94a3b8", fontSize: "12px" }}>Joined</p>
+                        <p style={{ margin: 0, fontSize: "13px" }}>{new Date(user.createdAt).toLocaleDateString()}</p>
+                      </div>
+                      <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                        <button onClick={() => openUserModal(user)} style={{ padding: "8px 10px", borderRadius: "8px", background: "#10b981", color: "white", border: "none", cursor: "pointer" }}>Edit</button>
+                        <button onClick={() => handleDeleteUserPrompt(user)} style={{ padding: "8px 10px", borderRadius: "8px", background: "#ef4444", color: "white", border: "none", cursor: "pointer" }}>Delete</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {modalOpen && selectedUser && (
+              <div style={{ position: "fixed", inset: 0, display: "flex", justifyContent: "center", alignItems: "center", background: "rgba(0,0,0,0.6)" }}>
+                <div style={{ width: "600px", background: "#0f172a", padding: "20px", borderRadius: "16px", border: "1px solid #1e293b" }}>
+                  <h2 style={{ margin: 0 }}>Edit User: {selectedUser.username}</h2>
+                  <p style={{ color: "#94a3b8" }}>ID: {selectedUser._id}</p>
+
+                  <label style={{ display: "block", marginTop: "12px", color: "#94a3b8" }}>Balance</label>
+                  <input type="number" value={editBalance} onChange={(e) => setEditBalance(Number(e.target.value))} style={{ width: "100%", padding: "10px", borderRadius: "8px", background: "#020617", color: "white", border: "1px solid #334155" }} />
+
+                  <label style={{ display: "block", marginTop: "12px", color: "#94a3b8" }}>Role</label>
+                  <select value={editRole} onChange={(e) => setEditRole(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "8px", background: "#020617", color: "white", border: "1px solid #334155" }}>
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                  </select>
+
+                  <div style={{ display: "flex", gap: "10px", marginTop: "16px", justifyContent: "flex-end" }}>
+                    <button onClick={handleCloseModal} style={{ padding: "10px 14px", borderRadius: "8px", background: "#64748b", color: "white", border: "none" }}>Cancel</button>
+                    <button onClick={handleUpdateUser} style={{ padding: "10px 14px", borderRadius: "8px", background: "#2563eb", color: "white", border: "none" }}>Save</button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        <div style={{ display: "grid", gap: "22px" }}>
-          <section
-            style={{
-              background: "#0f172a",
-              borderRadius: "24px",
-              padding: "28px",
-              border: "1px solid #1e293b",
-            }}
-          >
-            <h2 style={{ margin: "0 0 20px 0" }}>Key statistics</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "18px" }}>
-              <div style={{ background: "#020617", padding: "18px", borderRadius: "18px" }}>
-                <p style={{ color: "#94a3b8", marginBottom: "10px" }}>Active users</p>
-                <h3 style={{ margin: 0 }}>{overview.totalUsers}</h3>
-              </div>
-              <div style={{ background: "#020617", padding: "18px", borderRadius: "18px" }}>
-                <p style={{ color: "#94a3b8", marginBottom: "10px" }}>Transactions</p>
-                <h3 style={{ margin: 0 }}>{overview.totalTransactions}</h3>
-              </div>
-              <div style={{ background: "#020617", padding: "18px", borderRadius: "18px" }}>
-                <p style={{ color: "#94a3b8", marginBottom: "10px" }}>Latest update</p>
-                <h3 style={{ margin: 0 }}>Real time</h3>
-              </div>
-            </div>
-          </section>
+        {activeTab === "transactions" && (
+          <div>
+            <h1 style={{ margin: "0 0 8px 0" }}>Transactions</h1>
+            <p style={{ color: "#94a3b8", marginBottom: "24px" }}>View all transaction history</p>
 
-          <section
-            style={{
-              display: "grid",
-              gap: "22px",
-              gridTemplateColumns: "2fr 3fr",
-            }}
-          >
+            {message && (
+              <div
+                style={{
+                  marginBottom: "20px",
+                  padding: "18px",
+                  borderRadius: "16px",
+                  background: "#7f1d1d",
+                  color: "white",
+                }}
+              >
+                {message}
+              </div>
+            )}
+
             <div
               style={{
                 background: "#0f172a",
@@ -210,19 +576,19 @@ export default function AdminDashboard() {
                 border: "1px solid #1e293b",
               }}
             >
-              <h2 style={{ margin: "0 0 22px 0" }}>Latest customers</h2>
               {loading ? (
-                <p>Loading customers…</p>
-              ) : overview.users.length === 0 ? (
-                <p style={{ color: "#94a3b8" }}>No customer records found.</p>
+                <p>Loading transactions…</p>
+              ) : allTransactions.length === 0 ? (
+                <p style={{ color: "#94a3b8" }}>No transactions found.</p>
               ) : (
-                <div style={{ display: "grid", gap: "14px" }}>
-                  {overview.users.map((user) => (
+                <div style={{ display: "grid", gap: "12px" }}>
+                  {allTransactions.map((transaction) => (
                     <div
-                      key={user._id}
+                      key={transaction._id}
                       style={{
-                        display: "flex",
-                        justifyContent: "space-between",
+                        display: "grid",
+                        gridTemplateColumns: "1.5fr 1.5fr 1fr 1fr 1fr",
+                        gap: "16px",
                         alignItems: "center",
                         padding: "16px",
                         borderRadius: "14px",
@@ -230,17 +596,37 @@ export default function AdminDashboard() {
                       }}
                     >
                       <div>
-                        <p style={{ margin: 0, fontWeight: "bold" }}>{user.username}</p>
-                        <p style={{ margin: 0, color: "#94a3b8", fontSize: "13px" }}>{user.role}</p>
+                        <p style={{ margin: 0, color: "#94a3b8", fontSize: "12px" }}>From</p>
+                        <p style={{ margin: 0, fontWeight: "bold" }}>{transaction.sender}</p>
                       </div>
-                      <div style={{ textAlign: "right" }}>
-                        <p style={{ margin: 0, fontWeight: "bold" }}>{formatMoney(user.balance)}</p>
+                      <div>
+                        <p style={{ margin: 0, color: "#94a3b8", fontSize: "12px" }}>To</p>
+                        <p style={{ margin: 0, fontWeight: "bold" }}>{transaction.recipient}</p>
+                      </div>
+                      <div>
+                        <p style={{ margin: 0, color: "#94a3b8", fontSize: "12px" }}>Amount</p>
+                        <p style={{ margin: 0, fontWeight: "bold" }}>{formatMoney(transaction.amount)}</p>
+                      </div>
+                      <div>
+                        <p style={{ margin: 0, color: "#94a3b8", fontSize: "12px" }}>Bank</p>
+                        <p style={{ margin: 0, fontSize: "13px" }}>{transaction.bank}</p>
+                      </div>
+                      <div>
+                        <p style={{ margin: 0, color: "#94a3b8", fontSize: "12px" }}>Date</p>
+                        <p style={{ margin: 0, fontSize: "13px" }}>{new Date(transaction.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {activeTab === "settings" && (
+          <div>
+            <h1 style={{ margin: "0 0 8px 0" }}>Settings</h1>
+            <p style={{ color: "#94a3b8", marginBottom: "24px" }}>Configure admin preferences</p>
 
             <div
               style={{
@@ -248,40 +634,65 @@ export default function AdminDashboard() {
                 borderRadius: "24px",
                 padding: "28px",
                 border: "1px solid #1e293b",
+                maxWidth: "600px",
               }}
             >
-              <h2 style={{ margin: "0 0 22px 0" }}>Recent transactions</h2>
-              {loading ? (
-                <p>Loading transactions…</p>
-              ) : overview.transactions.length === 0 ? (
-                <p style={{ color: "#94a3b8" }}>No transaction records found.</p>
-              ) : (
-                <div style={{ display: "grid", gap: "14px" }}>
-                  {overview.transactions.map((transaction) => (
-                    <div
-                      key={transaction._id}
-                      style={{
-                        display: "grid",
-                        gap: "6px",
-                        padding: "16px",
-                        borderRadius: "14px",
-                        background: "#020617",
-                      }}
-                    >
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: "12px" }}>
-                        <p style={{ margin: 0, fontWeight: "bold" }}>{transaction.sender} → {transaction.recipient}</p>
-                        <p style={{ margin: 0 }}>{formatMoney(transaction.amount)}</p>
-                      </div>
-                      <p style={{ margin: 0, color: "#94a3b8", fontSize: "13px" }}>
-                        {transaction.bank} • {new Date(transaction.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  ))}
+              <div style={{ marginBottom: "24px" }}>
+                <h3 style={{ margin: "0 0 12px 0" }}>Admin Account</h3>
+                <div
+                  style={{
+                    background: "#020617",
+                    padding: "16px",
+                    borderRadius: "14px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <p style={{ margin: 0, color: "#94a3b8", fontSize: "12px" }}>Username</p>
+                  <p style={{ margin: "8px 0 0 0", fontWeight: "bold" }}>{adminUsername}</p>
                 </div>
-              )}
+              </div>
+
+              <div style={{ marginBottom: "24px" }}>
+                <h3 style={{ margin: "0 0 12px 0" }}>System Information</h3>
+                <div
+                  style={{
+                    background: "#020617",
+                    padding: "16px",
+                    borderRadius: "14px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <p style={{ margin: 0, color: "#94a3b8", fontSize: "12px" }}>API Endpoint</p>
+                  <p style={{ margin: "8px 0 0 0", fontSize: "13px", wordBreak: "break-all" }}>
+                    {import.meta.env.VITE_API_URL || "https://capital-bank-api.onrender.com"}
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: "24px" }}>
+                <h3 style={{ margin: "0 0 12px 0" }}>Help & Support</h3>
+                <p style={{ color: "#94a3b8", margin: "0 0 12px 0" }}>
+                  For assistance, contact your system administrator or visit the documentation.
+                </p>
+              </div>
+
+              <button
+                onClick={handleLogout}
+                style={{
+                  padding: "14px 24px",
+                  borderRadius: "14px",
+                  border: "none",
+                  background: "#dc2626",
+                  color: "white",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+              >
+                Logout
+              </button>
             </div>
-          </section>
-        </div>
+          </div>
+        )}
       </main>
     </div>
   );

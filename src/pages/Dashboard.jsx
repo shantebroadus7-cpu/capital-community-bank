@@ -33,12 +33,9 @@ export default function Dashboard() {
 
     try {
 
+      const API_URL = import.meta.env.VITE_API_URL || "https://capital-bank-api.onrender.com";
       const response = await fetch(
-        "https://capital-bank-api.onrender.com/api/transactions"
-      );
-
-      const data = await response.json();
-
+        `${API_URL}/api/transactions`
       setTransactions(data);
 
     } catch (error) {

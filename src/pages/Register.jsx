@@ -25,10 +25,12 @@ export default function Register() {
 
     setMessage("");
 
+    const API_URL = import.meta.env.VITE_API_URL || "https://capital-bank-api.onrender.com";
+
     try {
 
       const response = await fetch(
-        "https://capital-bank-api.onrender.com/api/register",
+        `${API_URL}/api/register`,
         {
           method: "POST",
 

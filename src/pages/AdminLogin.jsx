@@ -15,9 +15,11 @@ export default function AdminLogin() {
     setLoading(true);
     setMessage("");
 
+    const API_URL = import.meta.env.VITE_API_URL || "https://capital-bank-api.onrender.com";
+
     try {
       const response = await fetch(
-        "https://capital-bank-api.onrender.com/api/login",
+        `${API_URL}/api/login`,
         {
           method: "POST",
           headers: {

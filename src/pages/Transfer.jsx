@@ -127,8 +127,9 @@ export default function Transfer() {
     try {
 
       // SAVE TO MONGODB
+      const API_URL = import.meta.env.VITE_API_URL || "https://capital-bank-api.onrender.com";
       await fetch(
-        "https://capital-bank-api.onrender.com/api/transfer",
+        `${API_URL}/api/transfer`,
         {
           method: "POST",
 
