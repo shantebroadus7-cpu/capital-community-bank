@@ -3,6 +3,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { MongoMemoryServer } = require("mongodb-memory-server");
 
 require("dotenv").config();
 
@@ -10,6 +11,7 @@ const User = require("./models/User");
 const Transaction = require("./models/Transaction");
 
 const app = express();
+let mongoServer;
 
 /* =========================
    MIDDLEWARE
@@ -25,22 +27,24 @@ app.use(express.json());
    DATABASE CONNECTION
 ========================= */
 
-mongoose.connect(process.env.MONGO_URI)
 
-.then(() => {
+const connectDatabase = async () => {
+  try {
+    if (process.env.MONGO_URI.includes("localhost")) {
+      mongoServer = await MongoMemoryServer.create();
+      const mongoUri = mongoServer.getUri();
+      await mongoose.connect(mongoUri);
+      console.log("MongoDB In-Memory Server Connected");
+    } else {
+      await mongoose.connect(process.env.MONGO_URI);
+      console.log("MongoDB Connected Successfully");
+    }
+  } catch (error) {
+    console.log("MongoDB Connection Error:", error);
+  }
+};
 
-  console.log("MongoDB Connected Successfully");
-
-})
-
-.catch((error) => {
-
-  console.log(
-    "MongoDB Connection Error:",
-    error
-  );
-
-});
+connectDatabase();
 
 /* =========================
    AUTH MIDDLEWARE
