@@ -22,6 +22,11 @@ export default function AdminDashboard() {
   const [editBalance, setEditBalance] = useState(0);
   const [editRole, setEditRole] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
+  const [transactionSearch, setTransactionSearch] = useState("");
+  const [transactionFilter, setTransactionFilter] = useState("");
+  const [createUserOpen, setCreateUserOpen] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
@@ -77,6 +82,17 @@ export default function AdminDashboard() {
     if (query) {
       const q = query.toLowerCase();
       list = list.filter((u) => u.username.toLowerCase().includes(q) || String(u._id).includes(q));
+    }
+    return list;
+  }
+
+  function filteredTransactions(transactions, query, filter) {
+    let list = transactions || [];
+    if (filter === "sender") list = list.filter((t) => t.sender);
+    if (filter === "recipient") list = list.filter((t) => t.recipient);
+    if (query) {
+      const q = query.toLowerCase();
+      list = list.filter((t) => t.sender.toLowerCase().includes(q) || t.recipient.toLowerCase().includes(q) || t.bank.toLowerCase().includes(q));
     }
     return list;
   }
@@ -141,6 +157,34 @@ export default function AdminDashboard() {
       fetchAllUsers(token);
     } catch (error) {
       setMessage(error.message || "Delete failed");
+    }
+  };
+
+  const handleCreateUser = async () => {
+    if (!newUsername || !newPassword) {
+      setMessage("Username and password are required");
+      return;
+    }
+
+    const token = localStorage.getItem("bank_admin_token");
+    const API_URL = import.meta.env.VITE_API_URL || "https://capital-bank-api.onrender.com";
+
+    try {
+      const res = await fetch(`${API_URL}/api/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: newUsername, password: newPassword }),
+      });
+
+      if (!res.ok) throw new Error("Failed to create user");
+
+      setMessage("User created successfully");
+      setNewUsername("");
+      setNewPassword("");
+      setCreateUserOpen(false);
+      fetchAllUsers(token);
+    } catch (error) {
+      setMessage(error.message || "Creation failed");
     }
   };
 
@@ -435,8 +479,13 @@ export default function AdminDashboard() {
 
         {activeTab === "customers" && (
           <div>
-            <h1 style={{ margin: "0 0 8px 0" }}>Customers</h1>
-            <p style={{ color: "#94a3b8", marginBottom: "12px" }}>Manage and view all customer accounts</p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+              <div>
+                <h1 style={{ margin: 0 }}>Customers</h1>
+                <p style={{ color: "#94a3b8", marginTop: "4px" }}>Manage and view all customer accounts</p>
+              </div>
+              <button onClick={() => setCreateUserOpen(true)} style={{ padding: "12px 18px", borderRadius: "10px", background: "#10b981", color: "white", border: "none", cursor: "pointer", fontWeight: "bold" }}>+ Create User</button>
+            </div>
 
             <div style={{ display: "flex", gap: "12px", marginBottom: "18px", alignItems: "center" }}>
               <input
@@ -546,13 +595,48 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
+
+            {createUserOpen && (
+              <div style={{ position: "fixed", inset: 0, display: "flex", justifyContent: "center", alignItems: "center", background: "rgba(0,0,0,0.6)" }}>
+                <div style={{ width: "600px", background: "#0f172a", padding: "20px", borderRadius: "16px", border: "1px solid #1e293b" }}>
+                  <h2 style={{ margin: 0 }}>Create New User</h2>
+                  <p style={{ color: "#94a3b8" }}>Add a new customer account</p>
+
+                  <label style={{ display: "block", marginTop: "12px", color: "#94a3b8" }}>Username</label>
+                  <input type="text" placeholder="Enter username" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "8px", background: "#020617", color: "white", border: "1px solid #334155" }} />
+
+                  <label style={{ display: "block", marginTop: "12px", color: "#94a3b8" }}>Password</label>
+                  <input type="password" placeholder="Enter password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "8px", background: "#020617", color: "white", border: "1px solid #334155" }} />
+
+                  <div style={{ display: "flex", gap: "10px", marginTop: "16px", justifyContent: "flex-end" }}>
+                    <button onClick={() => { setCreateUserOpen(false); setNewUsername(""); setNewPassword(""); }} style={{ padding: "10px 14px", borderRadius: "8px", background: "#64748b", color: "white", border: "none" }}>Cancel</button>
+                    <button onClick={handleCreateUser} style={{ padding: "10px 14px", borderRadius: "8px", background: "#10b981", color: "white", border: "none" }}>Create</button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {activeTab === "transactions" && (
           <div>
             <h1 style={{ margin: "0 0 8px 0" }}>Transactions</h1>
-            <p style={{ color: "#94a3b8", marginBottom: "24px" }}>View all transaction history</p>
+            <p style={{ color: "#94a3b8", marginBottom: "12px" }}>View all transaction history</p>
+
+            <div style={{ display: "flex", gap: "12px", marginBottom: "18px", alignItems: "center" }}>
+              <input
+                placeholder="Search by sender, recipient, or bank"
+                value={transactionSearch}
+                onChange={(e) => setTransactionSearch(e.target.value)}
+                style={{ padding: "10px", borderRadius: "10px", border: "1px solid #334155", background: "#020617", color: "white", width: "400px" }}
+              />
+
+              <select value={transactionFilter} onChange={(e) => setTransactionFilter(e.target.value)} style={{ padding: "10px", borderRadius: "10px", background: "#020617", color: "white", border: "1px solid #334155" }}>
+                <option value="">All transactions</option>
+                <option value="sender">Outgoing</option>
+                <option value="recipient">Incoming</option>
+              </select>
+            </div>
 
             {message && (
               <div
@@ -572,17 +656,17 @@ export default function AdminDashboard() {
               style={{
                 background: "#0f172a",
                 borderRadius: "24px",
-                padding: "28px",
+                padding: "18px",
                 border: "1px solid #1e293b",
               }}
             >
               {loading ? (
                 <p>Loading transactions…</p>
-              ) : allTransactions.length === 0 ? (
+              ) : filteredTransactions(allTransactions, transactionSearch, transactionFilter).length === 0 ? (
                 <p style={{ color: "#94a3b8" }}>No transactions found.</p>
               ) : (
                 <div style={{ display: "grid", gap: "12px" }}>
-                  {allTransactions.map((transaction) => (
+                  {filteredTransactions(allTransactions, transactionSearch, transactionFilter).map((transaction) => (
                     <div
                       key={transaction._id}
                       style={{
