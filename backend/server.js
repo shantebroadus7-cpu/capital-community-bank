@@ -4,11 +4,14 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("./models/User");
+const { MongoMemoryServer } = require("mongodb-memory-server");
 
 require("dotenv").config();
 
 const Transaction =
   require("./models/Transaction");
+
+let mongoServer;
 
 const app = express();
 
@@ -61,29 +64,28 @@ const requireAdmin = (req, res, next) => {
    DATABASE CONNECTION
 ========================= */
 
-mongoose.connect(process.env.MONGO_URI, {
+const connectDatabase = async () => {
+  try {
+    if (process.env.MONGO_URI.includes("localhost")) {
+      // Use in-memory MongoDB for local development
+      mongoServer = await MongoMemoryServer.create();
+      const mongoUri = mongoServer.getUri();
+      await mongoose.connect(mongoUri);
+      console.log("MongoDB In-Memory Server Connected");
+    } else {
+      // Use cloud MongoDB for production
+      await mongoose.connect(process.env.MONGO_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      });
+      console.log("MongoDB Connected Successfully");
+    }
+  } catch (error) {
+    console.log("MongoDB Connection Error:", error);
+  }
+};
 
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-
-})
-
-.then(() => {
-
-  console.log(
-    "MongoDB Connected Successfully"
-  );
-
-})
-
-.catch((error) => {
-
-  console.log(
-    "MongoDB Connection Error:",
-    error
-  );
-
-});
+connectDatabase();
 
 /* =========================
    HEALTH CHECK
