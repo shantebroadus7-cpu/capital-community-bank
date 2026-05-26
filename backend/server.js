@@ -3,6 +3,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const User = require("./models/User");
 
 require("dotenv").config();
 
@@ -60,53 +61,29 @@ const requireAdmin = (req, res, next) => {
    DATABASE CONNECTION
 ========================= */
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI, {
+
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+
+})
 
 .then(() => {
 
-  console.log("MongoDB Connected");
+  console.log(
+    "MongoDB Connected Successfully"
+  );
 
 })
 
 .catch((error) => {
 
-  console.log("MongoDB Error:", error);
+  console.log(
+    "MongoDB Connection Error:",
+    error
+  );
 
 });
-
-/* =========================
-   USER SCHEMA
-========================= */
-
-const UserSchema =
-  new mongoose.Schema({
-
-    username: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-
-    password: {
-      type: String,
-      required: true,
-    },
-
-    balance: {
-      type: Number,
-      default: 250000,
-    },
-
-    role: {
-      type: String,
-      enum: ["user", "admin"],
-      default: "user",
-    },
-
-  });
-
-const User =
-  mongoose.model("User", UserSchema);
 
 /* =========================
    HEALTH CHECK
